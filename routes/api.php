@@ -9,3 +9,4 @@ Route::get('/customers/{id}', [RegisController::class, 'show']);
 Route::post('/regists', [RegisController::class, 'registers']);
 Route::put('/customers/{id}', [RegisController::class, 'update']);
 Route::delete('/customers/{id}', [RegisController::class, 'destroy']);
+Route::post('/login', [RegisController::class, 'login']);

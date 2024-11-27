@@ -71,6 +71,59 @@ class RegisController extends Controller
         ], 201);
     }
 
+    public function login(Request $request)
+    {
+        // Validasi input
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|string|email|max:255',
+            'password' => 'required|string|min:8',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // Ambil kredensial
+        $credentials = $request->only('email', 'password');
+        
+        // Cek apakah email ada di database
+        $user = Regis::where('email', $request->email)->first();
+        
+        // Jika user tidak ditemukan
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found',
+            ], 404);
+        }
+
+        // Verifikasi password dengan Hash::check
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid password',
+            ], 401);
+        }
+
+        // Buat token dengan Sanctum
+        $token = $user->createToken('authToken')->plainTextToken;
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Login successful',
+            'access_token' => 'Rahasia',
+            'token_type' => 'Bearer',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
+        ], 200);
+    }
 
     public function update(Request $request, $id)
     {
