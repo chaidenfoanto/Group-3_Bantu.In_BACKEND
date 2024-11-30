@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Regis;
+use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 
@@ -11,7 +11,7 @@ class RegisController extends Controller
 {
     public function index()
     {
-        $customer = Regis::all(); // Ganti Customer dengan Regis
+        $customer = User::all(); // Ganti Customer dengan Regis
         return response()->json([
             'status' => true,
             'message' => 'Customers retrieved successfully',
@@ -19,14 +19,14 @@ class RegisController extends Controller
         ], 200);
     }
 
-    public function show($id)
+    public function show($user_id)
     {
-        $customer = Regis::findOrFail($id); // Ganti Customer dengan Regis
+        $customer = User::findOrFail($user_id); // Ganti Customer dengan Regis
         return response()->json([
             'status' => true,
             'message' => 'Customer found successfully',
             'data' => [
-                'id' => $customer->id,
+                'user_id' => $customer->user_id,
                 'name' => $customer->name,
                 'email' => $customer->email,
                 'password' => 'Tidak ditampilkan secara umum'
@@ -39,8 +39,9 @@ class RegisController extends Controller
         // Validasi input request
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|unique:regiss|max:255', // Sesuaikan dengan nama tabel
+            'email' => 'required|string|email|unique:users|max:255', // Sesuaikan dengan nama tabel
             'password' => 'required|string|min:8',
+            'password_confirmation' => 'required|string|min:8|same:password' // Sesuaikan dengan nama field password
         ]);
 
         // Jika validasi gagal
@@ -53,7 +54,8 @@ class RegisController extends Controller
         }
 
         // Membuat customer dan meng-hash password sebelum menyimpannya
-        $customer = Regis::create([
+        $customer = User::create([
+            'user_id' => $request->user_id,
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password), // Hash password saat penyimpanan
@@ -64,7 +66,7 @@ class RegisController extends Controller
             'status' => true,
             'message' => 'Customer created successfully',
             'data' => [
-                'id' => $customer->id,
+                'user_id' => $customer->user_id,
                 'name' => $customer->name,
                 'email' => $customer->email,
             ]
@@ -91,7 +93,7 @@ class RegisController extends Controller
         $credentials = $request->only('email', 'password');
         
         // Cek apakah email ada di database
-        $user = Regis::where('email', $request->email)->first();
+        $user = User::where('email', $request->email)->first();
         
         // Jika user tidak ditemukan
         if (!$user) {
@@ -118,18 +120,20 @@ class RegisController extends Controller
             'access_token' => 'Rahasia',
             'token_type' => 'Bearer',
             'user' => [
-                'id' => $user->id,
+                'user_id' => $user->user_id,
                 'name' => $user->name,
                 'email' => $user->email,
             ],
         ], 200);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $user_id)
     {
+        $customer = User::where('user_id', $user_id)->firstOrFail();
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:regiss,email,' . $id, // Sesuaikan dengan nama tabel
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user_id  . ',user_id', // Sesuaikan dengan nama tabel
             'password' => 'nullable|string|min:8',
         ]);
 
@@ -141,7 +145,6 @@ class RegisController extends Controller
             ], 422);
         }
 
-        $customer = Regis::findOrFail($id); 
         $customer->update($request->except('password'));
         
         if ($request->filled('password')) {
@@ -153,16 +156,16 @@ class RegisController extends Controller
             'status' => true,
             'message' => 'Customer updated successfully',
             'data' => [
-                'id' => $customer->id,
+                'user_id' => $customer->user_id,
                 'name' => $customer->name,
                 'email' => $customer->email,
             ]
         ], 200);
     }
 
-    public function destroy($id)
+    public function destroy($user_id)
     {
-        $customer = Regis::findOrFail($id); // Ganti Customer dengan Regis
+        $customer = User::findOrFail($user_id); // Ganti Customer dengan Regis
         $customer->delete();
         
         return response()->json([
