@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\User;
 use App\Models\TukangModel;
 use App\Models\BiayaModel;
+use App\Models\DetailPesananModel;
 
 class PesananModel extends Model
 {
@@ -67,5 +68,9 @@ class PesananModel extends Model
     public function biaya()
     {
         return $this->belongsTo(BiayaModel::class, 'id_biaya', 'id_biaya');
+    }
+
+    public function detailpesanan() {
+        return $this->hasMany(DetailPesananModel::class, 'id_pesanan', 'id_pesanan');
     }
 }

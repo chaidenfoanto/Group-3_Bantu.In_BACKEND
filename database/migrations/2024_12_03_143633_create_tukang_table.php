@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('password_confirmation')->nullable(); // Mengizinkan null
             $table->string('no_hp', 15);
-            $table->enum('spesialisasi', ['AC', 'LAS']);
+            $table->enum('spesialisasi', ['AC', 'LAS'])->default('AC');
             $table->binary('ktp')->nullable(); 
             $table->float('rating');
             $table->float('total_rating');

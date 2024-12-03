@@ -12,8 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('detail_pesanan', function (Blueprint $table) {
-            $table->id();
+            $table->integer('id_detailpesanan')->primary()->unsigned()->autoIncrement();
+            $table->unsignedInteger('id_pesanan');
+            $table->string('nama_layanan');
+            $table->decimal('harga_layanan', 10, 2);
+            $table->integer('kuantitas');
+            $table->decimal('subtotal', 10, 2);
+            $table->text('deskripsi_servis');
             $table->timestamps();
+
+            $table->foreign('id_pesanan')
+                ->references('id_pesanan')
+                ->on('pesanan');
         });
     }
 
