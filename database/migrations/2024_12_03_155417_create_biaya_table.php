@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('biaya', function (Blueprint $table) {
-            $table->id();
+            $table->integer('id_biaya')->primary()->unsigned()->autoIncrement();
+            $table->decimal('biaya_servis', 10, 2);
+            $table->decimal('biaya_admin', 10, 2);
+            $table->decimal('biaya_total', 10, 2);
             $table->timestamps();
         });
     }

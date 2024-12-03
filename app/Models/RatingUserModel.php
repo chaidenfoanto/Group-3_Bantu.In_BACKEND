@@ -13,12 +13,20 @@ class RatingUserModel extends Model
 
     protected $table = 'rating_user'; // Nama tabel di database
 
+    protected $primaryKey = 'id_ratinguser';
+
+    public $incrementing = true;
+
+    protected $keyType = 'integer';
+
     protected $fillable = [
         'id_user',
         'id_tukang',
         'rating',
         'ulasan',
     ];
+
+    public $timestamps = true;
 
     /**
      * Relasi ke model User.

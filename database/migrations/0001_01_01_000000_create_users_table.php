@@ -18,11 +18,11 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('password_confirmation')->nullable(); // Mengizinkan null
-            // $table->string('no_hp', 15);
-            // $table->text('alamat');
-            // $table->text('deskripsi_alamat');
-            // $table->float('rating', 2, 1);
-            // $table->float('total_rating', 4, 1);
+            $table->string('no_hp', 15);
+            $table->text('alamat');
+            $table->text('deskripsi_alamat');
+            $table->float('rating');
+            $table->float('total_rating');
             $table->rememberToken();
             $table->timestamps();
         });

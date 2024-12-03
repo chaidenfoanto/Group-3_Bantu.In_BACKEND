@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('lokasi_tukang', function (Blueprint $table) {
             $table->integer('id_lokasi')->primary()->unsigned()->autoIncrement();
             $table->string('id_tukang', 20);
-            $table->float('latitude', 10, 6); // 10 digit total, 6 digit untuk desimal
-            $table->float('longitude', 10, 6); // 10 digit total, 6 digit untuk desimal
+            $table->float('latitude'); // 10 digit total, 6 digit untuk desimal
+            $table->float('longitude'); // 10 digit total, 6 digit untuk desimal
             $table->timestamps();
 
             $table->foreign('id_tukang')

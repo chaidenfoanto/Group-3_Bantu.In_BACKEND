@@ -29,6 +29,8 @@ class LokasiTukangModel extends Model
         'longitude',
     ];
 
+    public $timestamps = true;
+
     // Relasi dengan model Tukang
     public function tukang()
     {
