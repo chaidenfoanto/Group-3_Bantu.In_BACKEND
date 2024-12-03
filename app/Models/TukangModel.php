@@ -45,4 +45,8 @@ class TukangModel extends Model
     public function lokasi() {
         return $this->hasMany(LokasiTukangModel::class, 'id_tukang', 'id_tukang');
     }
+
+    public function ratinguser() {
+        return $this->hasMany(RatingUserModel::class, 'id_tukang', 'id_tukang');
+    }
 }

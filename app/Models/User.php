@@ -68,4 +68,8 @@ class User extends Authenticatable
     {
         return $this->morphMany(PersonalAccessToken::class, 'tokenable');
     }
+
+    public function ratinguser() {
+        return $this->hasMany(RatingUserModel::class, 'id_user', 'id_user');
+    }
 }
