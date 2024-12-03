@@ -12,8 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('rating_tukang', function (Blueprint $table) {
-            $table->id();
+            $table->integer('id_ratingtukang')->primary()->unsigned()->autoIncrement();
+            $table->string('id_user', 20);
+            $table->string('id_tukang', 20);
+            $table->integer('rating');
+            $table->text('ulasan');
             $table->timestamps();
+
+            $table->foreign('id_user')
+                ->references('id_user')
+                ->on('users');
+
+            $table->foreign('id_tukang')
+                ->references('id_tukang')
+                ->on('tukang'); 
         });
     }
 

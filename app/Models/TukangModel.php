@@ -9,6 +9,8 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Models\LokasiTukangModel;
+use App\Models\RatingTukangModel;
+use App\Models\RatingUserModel;
 
 class TukangModel extends Model
 {
@@ -48,5 +50,9 @@ class TukangModel extends Model
 
     public function ratinguser() {
         return $this->hasMany(RatingUserModel::class, 'id_tukang', 'id_tukang');
+    }
+
+    public function ratingtukang() {
+        return $this->hasMany(RatingTukangModel::class, 'id_tukang', 'id_tukang');
     }
 }

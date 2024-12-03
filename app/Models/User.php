@@ -8,6 +8,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Str;
+use App\Models\RatingTukangModel;
+use App\Models\RatingUserModel;
 
 class User extends Authenticatable
 {
@@ -71,5 +73,9 @@ class User extends Authenticatable
 
     public function ratinguser() {
         return $this->hasMany(RatingUserModel::class, 'id_user', 'id_user');
+    }
+
+    public function ratingtukang() {
+        return $this->hasMany(RatingTukangModel::class, 'id_user', 'id_user');
     }
 }
