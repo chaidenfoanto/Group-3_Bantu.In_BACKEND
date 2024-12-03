@@ -12,12 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->bigIncrements('user_id');
+            $table->string('id_user', 20)->primary();
             $table->string('name', 50);
             $table->string('email', 50)->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('password_confirmation')->nullable(); // Mengizinkan null
+            // $table->string('no_hp', 15);
+            // $table->text('alamat');
+            // $table->text('deskripsi_alamat');
+            // $table->float('rating', 2, 1);
+            // $table->float('total_rating', 4, 1);
             $table->rememberToken();
             $table->timestamps();
         });
@@ -47,6 +52,4 @@ return new class extends Migration
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
     }
-
-
 };

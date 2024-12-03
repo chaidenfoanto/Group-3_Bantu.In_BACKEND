@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -19,9 +20,11 @@ class User extends Authenticatable
      * @var array<int, string>
      */
 
-    protected $primaryKey = 'user_id';
+    protected $primaryKey = 'id_user';
 
-    public $incrementing = true; 
+    public $incrementing = false; 
+
+    protected $keyType = 'string';
     
     protected $fillable = [
         'name',
@@ -50,5 +53,19 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($user) {
+            if (empty($user->id_user)) { // Jika id_user kosong
+                $user->id_user = Str::random(20); // Isi dengan string random sepanjang 20 karakter
+            }
+        });
+    }
+
+    public function tokens()
+    {
+        return $this->morphMany(PersonalAccessToken::class, 'tokenable');
     }
 }
