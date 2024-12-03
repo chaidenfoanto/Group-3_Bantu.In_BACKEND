@@ -11,22 +11,28 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('rating_tukang', function (Blueprint $table) {
-            $table->integer('id_ratingtukang')->primary()->unsigned()->autoIncrement();
+        Schema::create('pesanan', function (Blueprint $table) {
+            $table->integer('id_pesanan')->primary()->unsigned()->autoIncrement();
             $table->string('id_user', 20);
             $table->string('id_tukang', 20);
-            $table->integer('rating');
-            $table->text('ulasan');
-            $table->datetime('tanggal_rating');
+            $table->unsignedInteger('id_biaya');
+            $table->datetime('waktu_pesan'); 
+            $table->datetime('waktu_servis');
+            $table->text('alamat_servis');
+            $table->enum('metode_pembayaran', ['Tunai', 'Non-tunai']);
             $table->timestamps();
 
             $table->foreign('id_user')
                 ->references('id_user')
                 ->on('users');
-
+            
             $table->foreign('id_tukang')
                 ->references('id_tukang')
-                ->on('tukang'); 
+                ->on('tukang');
+
+            $table->foreign('id_biaya')
+                ->references('id_biaya')
+                ->on('biaya');
         });
     }
 
@@ -35,6 +41,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('rating_tukang');
+        Schema::dropIfExists('pesanan');
     }
 };

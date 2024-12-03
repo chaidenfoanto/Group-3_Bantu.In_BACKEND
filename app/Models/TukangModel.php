@@ -11,6 +11,7 @@ use Laravel\Sanctum\PersonalAccessToken;
 use App\Models\LokasiTukangModel;
 use App\Models\RatingTukangModel;
 use App\Models\RatingUserModel;
+use App\Models\PesananModel;
 
 class TukangModel extends Model
 {
@@ -54,5 +55,9 @@ class TukangModel extends Model
 
     public function ratingtukang() {
         return $this->hasMany(RatingTukangModel::class, 'id_tukang', 'id_tukang');
+    }
+
+    public function pesanan() {
+        return $this->hasMany(PesananModel::class, 'id_tukang', 'id_tukang');
     }
 }

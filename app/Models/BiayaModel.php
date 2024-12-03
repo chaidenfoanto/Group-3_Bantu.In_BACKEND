@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\PesananModel;
 
 class BiayaModel extends Model
 {
@@ -37,4 +39,8 @@ class BiayaModel extends Model
         'biaya_admin' => 'decimal:2',
         'biaya_total' => 'decimal:2',
     ];
+
+    public function pesanan() {
+        return $this->hasMany(PesananModel::class, 'id_biaya', 'id_biaya');
+    }
 }

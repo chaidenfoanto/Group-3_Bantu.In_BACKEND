@@ -10,6 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Str;
 use App\Models\RatingTukangModel;
 use App\Models\RatingUserModel;
+use App\Models\PesananModel;
 
 class User extends Authenticatable
 {
@@ -77,5 +78,9 @@ class User extends Authenticatable
 
     public function ratingtukang() {
         return $this->hasMany(RatingTukangModel::class, 'id_user', 'id_user');
+    }
+
+    public function pesanan() {
+        return $this->hasMany(PesananModel::class, 'id_user', 'id_user');
     }
 }

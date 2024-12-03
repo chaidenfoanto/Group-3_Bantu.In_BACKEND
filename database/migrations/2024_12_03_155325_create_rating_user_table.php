@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('id_tukang', 20);
             $table->integer('rating');
             $table->text('ulasan');
+            $table->datetime('tanggal_rating');
             $table->timestamps();
 
             $table->foreign('id_user')
