@@ -41,6 +41,6 @@ class BiayaModel extends Model
     ];
 
     public function pesanan() {
-        return $this->hasMany(PesananModel::class, 'id_biaya', 'id_biaya');
+        return $this->hasOne(PesananModel::class, 'id_biaya', 'id_biaya');
     }
 }

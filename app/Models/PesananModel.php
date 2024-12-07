@@ -8,6 +8,9 @@ use App\Models\User;
 use App\Models\TukangModel;
 use App\Models\BiayaModel;
 use App\Models\DetailPesananModel;
+use App\Models\RatingUserModel;
+use App\Models\RatingTukangModel;
+use App\Models\HistoryModel;
 
 class PesananModel extends Model
 {
@@ -71,6 +74,10 @@ class PesananModel extends Model
     }
 
     public function detailpesanan() {
-        return $this->hasMany(DetailPesananModel::class, 'id_pesanan', 'id_pesanan');
+        return $this->hasOne(DetailPesananModel::class, 'id_pesanan', 'id_pesanan');
+    }
+
+    public function history() {
+        return $this->hasMany(HistoryModel::class, 'id_pesanan', 'id_pesanan');
     }
 }

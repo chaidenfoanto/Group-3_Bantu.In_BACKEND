@@ -20,7 +20,8 @@ return new class extends Migration
 
             $table->foreign('id_tukang')
                 ->references('id_tukang')
-                ->on('tukang'); // Tabel penggunas adalah tabel librarian
+                ->on('tukang') // Tabel penggunas adalah tabel librarian
+                ->onDelete('cascade'); // Jika pengguna dihapus, maka lokasi akan terhapus
         });
     }
 
