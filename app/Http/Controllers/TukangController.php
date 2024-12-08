@@ -41,7 +41,10 @@ class TukangController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|unique:tukang|max:255', // Sesuaikan dengan nama tabel
             'password' => 'required|string|min:8',
-            'password_confirmation' => 'required|string|min:8|same:password' // Sesuaikan dengan nama field password
+            'password_confirmation' => 'required|string|min:8|same:password', // Sesuaikan dengan nama field password
+            'no_hp' => 'required|string|min:11',
+            'spesialisasi' => 'required|string',
+            'ktp' => 'required|file|mimes:jpeg,png,jpg' // Sesuaikan dengan nama field ktp
         ]);
 
         // Jika validasi gagal
@@ -59,6 +62,9 @@ class TukangController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password), // Hash password saat penyimpanan
+            'no_hp' => $request->no_hp,
+            'spesialisasi' => $request->spesialisasi,
+            'ktp' => $request->file('ktp')->store('public/ktp') // Simpan file ktp di folder public/ktp
         ]);
 
         // Kirimkan response tanpa password
@@ -69,6 +75,10 @@ class TukangController extends Controller
                 'id_tukang' => $customer->id_tukang,
                 'name' => $customer->name,
                 'email' => $customer->email,
+                'password' => 'Tidak ditampilkan secara umum',
+                'no_hp' => $customer->no_hp,
+                'spesialisasi' => $customer->spesialisasi,
+                'ktp' => $customer->ktp // Ditampilkan URL file ktp
             ]
         ], 201);
     }
@@ -135,6 +145,8 @@ class TukangController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:tukang,email,' . $id_tukang  . ',id_tukang', // Sesuaikan dengan nama tabel
             'password' => 'nullable|string|min:8',
+            'no_hp' => 'required|string|min:11',
+            'spesialisasi' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -159,6 +171,9 @@ class TukangController extends Controller
                 'id_tukang' => $customer->id_tukang,
                 'name' => $customer->name,
                 'email' => $customer->email,
+                'password' => 'Tidak ditampilkan secara umum',
+                'no_hp' => $customer->no_hp,
+                'spesialisasi' => $customer->spesialisasi,
             ]
         ], 200);
     }

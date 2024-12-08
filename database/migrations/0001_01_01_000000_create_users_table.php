@@ -19,10 +19,10 @@ return new class extends Migration
             $table->string('password');
             $table->string('password_confirmation')->nullable(); // Mengizinkan null
             $table->string('no_hp', 15);
-            $table->text('alamat');
-            $table->text('deskripsi_alamat');
-            $table->float('rating');
-            $table->float('total_rating');
+            $table->text('alamat')->default('Jl. bla bla bla');
+            $table->text('deskripsi_alamat')->default('alamat saya ada didekat toko bbla bla bla');
+            $table->float('rating')->default(0);
+            $table->float('total_rating')->default(0);
             $table->rememberToken();
             $table->timestamps();
         });

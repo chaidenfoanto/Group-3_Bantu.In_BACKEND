@@ -49,6 +49,15 @@ class PesananModel extends Model
         'metode_pembayaran',
     ];
 
+    protected static function booted()
+    {
+        static::creating(function ($pesanan) {
+            if (empty($pesanan->id_pesanan)) { // Jika id_user kosong
+                $pesanan->id_pesanan = Str::random(20); // Isi dengan string random sepanjang 20 karakter
+            }
+        });
+    }
+
     /**
      * Menentukan relasi dengan model User.
      */

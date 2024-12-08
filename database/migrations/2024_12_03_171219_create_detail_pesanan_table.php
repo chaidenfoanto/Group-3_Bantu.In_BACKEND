@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('detail_pesanan', function (Blueprint $table) {
             $table->integer('id_detailpesanan')->primary()->unsigned()->autoIncrement();
-            $table->unsignedInteger('id_pesanan');
+            $table->string('id_pesanan');
             $table->string('nama_layanan');
             $table->decimal('harga_layanan', 10, 2);
             $table->integer('kuantitas');

@@ -29,7 +29,12 @@ class RegisController extends Controller
                 'id_user' => $customer->id_user,
                 'name' => $customer->name,
                 'email' => $customer->email,
-                'password' => 'Tidak ditampilkan secara umum'
+                'password' => 'Tidak ditampilkan secara umum',
+                'no_hp' => $customer->no_hp,
+                'alamat' => $customer->alamat,
+                'deskripsi_alamat' => $customer->deskripsi_alamat,
+                'rating' => 0,
+                'total_rating' => 0, // Inisialisasi total rating sebagai 0 sebelum diupdate di proses rating
             ]
         ], 200);
     }
@@ -41,7 +46,8 @@ class RegisController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|unique:users|max:255', // Sesuaikan dengan nama tabel
             'password' => 'required|string|min:8',
-            'password_confirmation' => 'required|string|min:8|same:password' // Sesuaikan dengan nama field password
+            'password_confirmation' => 'required|string|min:8|same:password', // Sesuaikan dengan nama field password
+            'no_hp' => 'required|string|min:11'
         ]);
 
         // Jika validasi gagal
@@ -59,6 +65,7 @@ class RegisController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password), // Hash password saat penyimpanan
+            'no_hp' => $request->no_hp,
         ]);
 
         // Kirimkan response tanpa password
@@ -69,6 +76,12 @@ class RegisController extends Controller
                 'id_user' => $customer->id_user,
                 'name' => $customer->name,
                 'email' => $customer->email,
+                'password' => 'Tidak ditampilkan secara umum',
+                'no_hp' => $customer->no_hp,
+                'alamat' => $customer->alamat,
+                'deskripsi_alamat' => $customer->deskripsi_alamat,
+                'rating' => 0,
+                'total_rating' => 0,
             ]
         ], 201);
     }
@@ -135,6 +148,9 @@ class RegisController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $id_user  . ',id_user', // Sesuaikan dengan nama tabel
             'password' => 'nullable|string|min:8',
+            'no_hp' => 'required|string|min:11',
+            'alamat' => 'nullable|string',
+            'deskripsi_alamat' => 'nullable|string' // Sesuaikan dengan nama field deskripsi alamat
         ]);
 
         if ($validator->fails()) {
@@ -159,6 +175,10 @@ class RegisController extends Controller
                 'id_user' => $customer->id_user,
                 'name' => $customer->name,
                 'email' => $customer->email,
+                'password' => 'Tidak ditampilkan secara umum',
+                'no_hp' => $customer->no_hp,
+                'alamat' => $customer->alamat,
+                'deskripsi_alamat' => $customer->deskripsi_alamat,
             ]
         ], 200);
     }

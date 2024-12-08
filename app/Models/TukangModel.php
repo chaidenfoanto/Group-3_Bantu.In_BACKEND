@@ -29,6 +29,9 @@ class TukangModel extends Model
         'name',
         'email',
         'password',
+        'no_hp',
+        'spesialisasi',
+        'ktp'
     ];
 
     protected static function booted()
@@ -38,11 +41,6 @@ class TukangModel extends Model
                 $tukang->id_tukang = Str::random(20); // Isi dengan string random sepanjang 20 karakter
             }
         });
-    }
-
-    public function tokens()
-    {
-        return $this->morphMany(PersonalAccessToken::class, 'tokenable');
     }
 
     public function lokasi() {

@@ -33,6 +33,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'no_hp',
+        'alamat',
+        'deskripsi_alamat'
     ];
 
     /**
@@ -65,11 +68,6 @@ class User extends Authenticatable
                 $user->id_user = Str::random(20); // Isi dengan string random sepanjang 20 karakter
             }
         });
-    }
-
-    public function tokens()
-    {
-        return $this->morphMany(PersonalAccessToken::class, 'tokenable');
     }
 
     public function ratinguser() {

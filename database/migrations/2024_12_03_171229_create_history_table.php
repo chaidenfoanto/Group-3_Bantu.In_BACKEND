@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('history', function (Blueprint $table) {
             $table->integer('id_history')->primary()->unsigned()->autoIncrement();
-            $table->unsignedInteger('id_pesanan');
+            $table->string('id_pesanan');
             $table->enum('status', ['not done', 'done',])->default('not done');
             $table->timestamps();
 
