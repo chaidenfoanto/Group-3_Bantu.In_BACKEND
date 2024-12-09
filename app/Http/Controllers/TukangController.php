@@ -44,7 +44,8 @@ class TukangController extends Controller
             'password_confirmation' => 'required|string|min:8|same:password', // Sesuaikan dengan nama field password
             'no_hp' => 'required|string|min:11',
             'spesialisasi' => 'required|string',
-            'ktp' => 'required|file|mimes:jpeg,png,jpg' // Sesuaikan dengan nama field ktp
+            'ktp' => 'required|file|mimes:jpeg,png,jpg', // Sesuaikan dengan nama field ktp
+            'foto_diri' => 'required|file|mimes:jpeg,png,jpg'
         ]);
 
         // Jika validasi gagal
@@ -64,7 +65,8 @@ class TukangController extends Controller
             'password' => Hash::make($request->password), // Hash password saat penyimpanan
             'no_hp' => $request->no_hp,
             'spesialisasi' => $request->spesialisasi,
-            'ktp' => $request->file('ktp')->store('public/ktp') // Simpan file ktp di folder public/ktp
+            'ktp' => $request->file('ktp')->store('public/ktp'), // Simpan file ktp di folder public/ktp
+            'foto_diri' => $request->file('foto_diri')->store('public/foto_diri'), //
         ]);
 
         // Kirimkan response tanpa password
@@ -78,7 +80,8 @@ class TukangController extends Controller
                 'password' => 'Tidak ditampilkan secara umum',
                 'no_hp' => $customer->no_hp,
                 'spesialisasi' => $customer->spesialisasi,
-                'ktp' => $customer->ktp // Ditampilkan URL file ktp
+                'ktp' => $customer->ktp, // Ditampilkan URL file ktp,
+                'foto_diri' => $customer->foto_diri // Ditampilkan URL file foto diri,
             ]
         ], 201);
     }
@@ -147,6 +150,7 @@ class TukangController extends Controller
             'password' => 'nullable|string|min:8',
             'no_hp' => 'required|string|min:11',
             'spesialisasi' => 'required|string',
+            'foto_diri' => 'nullable|file|mimes:jpeg,png,jpg|max:2048', // Sesuaikan dengan nama field ktp
         ]);
 
         if ($validator->fails()) {
@@ -174,6 +178,7 @@ class TukangController extends Controller
                 'password' => 'Tidak ditampilkan secara umum',
                 'no_hp' => $customer->no_hp,
                 'spesialisasi' => $customer->spesialisasi,
+                'foto_diri' => $customer->foto_diri // Ditampilkan URL file foto diri,
             ]
         ], 200);
     }

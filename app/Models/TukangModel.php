@@ -31,7 +31,8 @@ class TukangModel extends Model
         'password',
         'no_hp',
         'spesialisasi',
-        'ktp'
+        'ktp',
+        'foto_diri'
     ];
 
     protected static function booted()

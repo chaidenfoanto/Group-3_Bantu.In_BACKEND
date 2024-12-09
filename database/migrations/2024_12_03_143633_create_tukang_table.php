@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('no_hp', 15);
             $table->enum('spesialisasi', ['AC', 'LAS'])->default('AC');
             $table->binary('ktp'); 
+            $table->binary('foto_diri');
             $table->float('rating')->default(0);
             $table->float('total_rating')->default(0);
             $table->rememberToken();
