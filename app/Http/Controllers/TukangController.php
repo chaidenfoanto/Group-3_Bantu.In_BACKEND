@@ -6,29 +6,30 @@ use Illuminate\Http\Request;
 use App\Models\TukangModel;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class TukangController extends Controller
 {
     public function indexTukang()
     {
-        $customer = TukangModel::all(); // Ganti Customer dengan Regis
+        $tukang = TukangModel::all(); // Ganti tukang dengan Regis
         return response()->json([
             'status' => true,
-            'message' => 'Customers retrieved successfully',
-            'data' => $customer
+            'message' => 'tukangs retrieved successfully',
+            'data' => $tukang
         ], 200);
     }
 
     public function showTukang($id_tukang)
     {
-        $customer = TukangModel::findOrFail($id_tukang); // Ganti Customer dengan Regis
+        $tukang = TukangModel::findOrFail($id_tukang); // Ganti tukang dengan Regis
         return response()->json([
             'status' => true,
-            'message' => 'Customer found successfully',
+            'message' => 'tukang found successfully',
             'data' => [
-                'id_tukang' => $customer->id_tukang,
-                'name' => $customer->name,
-                'email' => $customer->email,
+                'id_tukang' => $tukang->id_tukang,
+                'name' => $tukang->name,
+                'email' => $tukang->email,
                 'password' => 'Tidak ditampilkan secara umum'
             ]
         ], 200);
@@ -57,8 +58,8 @@ class TukangController extends Controller
             ], 422);
         }
 
-        // Membuat customer dan meng-hash password sebelum menyimpannya
-        $customer = TukangModel::create([
+        // Membuat tukang dan meng-hash password sebelum menyimpannya
+        $tukang = TukangModel::create([
             'id_tukang' => $request->id_tukang,
             'name' => $request->name,
             'email' => $request->email,
@@ -69,19 +70,23 @@ class TukangController extends Controller
             'foto_diri' => $request->file('foto_diri')->store('public/foto_diri'), //
         ]);
 
+        $token = $tukang->createToken('authToken')->plainTextToken;
+
         // Kirimkan response tanpa password
         return response()->json([
             'status' => true,
-            'message' => 'Customer created successfully',
+            'message' => 'tukang created successfully',
             'data' => [
-                'id_tukang' => $customer->id_tukang,
-                'name' => $customer->name,
-                'email' => $customer->email,
+                'id_tukang' => $tukang->id_tukang,
+                'name' => $tukang->name,
+                'email' => $tukang->email,
                 'password' => 'Tidak ditampilkan secara umum',
-                'no_hp' => $customer->no_hp,
-                'spesialisasi' => $customer->spesialisasi,
-                'ktp' => $customer->ktp, // Ditampilkan URL file ktp,
-                'foto_diri' => $customer->foto_diri // Ditampilkan URL file foto diri,
+                'no_hp' => $tukang->no_hp,
+                'spesialisasi' => $tukang->spesialisasi,
+                'ktp' => $tukang->ktp, // Ditampilkan URL file ktp,
+                'foto_diri' => $tukang->foto_diri, // Ditampilkan URL file foto diri,
+                'access_token' => $token,
+                'token_type' => 'Bearer'
             ]
         ], 201);
     }
@@ -106,18 +111,18 @@ class TukangController extends Controller
         $credentials = $request->only('email', 'password');
         
         // Cek apakah email ada di database
-        $user = TukangModel::where('email', $request->email)->first();
+        $tukang = TukangModel::where('email', $request->email)->first();
         
-        // Jika user tidak ditemukan
-        if (!$user) {
+        // Jika tukang tidak ditemukan
+        if (!$tukang) {
             return response()->json([
                 'status' => false,
-                'message' => 'User not found',
+                'message' => 'tukang not found',
             ], 404);
         }
 
         // Verifikasi password dengan Hash::check
-        if (!Hash::check($request->password, $user->password)) {
+        if (!Hash::check($request->password, $tukang->password)) {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid password',
@@ -125,24 +130,26 @@ class TukangController extends Controller
         }
 
         // Buat token dengan Sanctum
-        $token = $user->createToken('authToken')->plainTextToken;
+        $token = $tukang->createToken('authToken')->plainTextToken;
 
         return response()->json([
             'status' => true,
             'message' => 'Login successful',
             'access_token' => 'Rahasia',
             'token_type' => 'Bearer',
-            'user' => [
-                'id_tukang' => $user->id_tukang,
-                'name' => $user->name,
-                'email' => $user->email,
+            'tukang' => [
+                'id_tukang' => $tukang->id_tukang,
+                'name' => $tukang->name,
+                'email' => $tukang->email,
+                'access_token' => $token,
+                'token_type' => 'Bearer'
             ],
         ], 200);
     }
 
     public function updateTukang(Request $request, $id_tukang)
     {
-        $customer = TukangModel::where('id_tukang', $id_tukang)->firstOrFail();
+        $tukang = TukangModel::where('id_tukang', $id_tukang)->firstOrFail();
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
@@ -161,36 +168,45 @@ class TukangController extends Controller
             ], 422);
         }
 
-        $customer->update($request->except('password'));
+        $tukang->update($request->except('password'));
         
         if ($request->filled('password')) {
-            $customer->password = Hash::make($request->password);
-            $customer->save();
+            $tukang->password = Hash::make($request->password);
+            $tukang->save();
         }
 
         return response()->json([
             'status' => true,
-            'message' => 'Customer updated successfully',
+            'message' => 'tukang updated successfully',
             'data' => [
-                'id_tukang' => $customer->id_tukang,
-                'name' => $customer->name,
-                'email' => $customer->email,
+                'id_tukang' => $tukang->id_tukang,
+                'name' => $tukang->name,
+                'email' => $tukang->email,
                 'password' => 'Tidak ditampilkan secara umum',
-                'no_hp' => $customer->no_hp,
-                'spesialisasi' => $customer->spesialisasi,
-                'foto_diri' => $customer->foto_diri // Ditampilkan URL file foto diri,
+                'no_hp' => $tukang->no_hp,
+                'spesialisasi' => $tukang->spesialisasi,
+                'foto_diri' => $tukang->foto_diri // Ditampilkan URL file foto diri,
             ]
         ], 200);
     }
 
     public function destroyTukang($id_tukang)
     {
-        $customer = TukangModel::findOrFail($id_tukang); // Ganti Customer dengan Regis
-        $customer->delete();
+        $tukang = TukangModel::findOrFail($id_tukang); // Ganti tukang dengan Regis
+        $tukang->delete();
         
         return response()->json([
             'status' => true,
-            'message' => 'Customer deleted successfully'
+            'message' => 'tukang deleted successfully'
         ], 204);
+    }
+    public function logout(Request $request)
+    {
+        // Hapus token autentikasi Tukang
+        $request->user('tukang')->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'Logout successful for Tukang',
+        ], 200);
     }
 }

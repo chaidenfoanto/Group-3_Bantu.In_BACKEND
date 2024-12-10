@@ -44,6 +44,10 @@ return [
             'driver' => 'sanctum',
             'provider' => 'users',
         ],
+        'tukang' => [
+            'driver' => 'sanctum',
+            'provider' => 'tukangs',
+        ],
     ],
 
     /*
@@ -68,6 +72,12 @@ return [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
+        'tukangs' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\TukangModel::class,
+            // 'connection' => 'mysql_tukang', // Hapus ini jika tidak perlu
+        ],
+
 
         // 'users' => [
         //     'driver' => 'database',

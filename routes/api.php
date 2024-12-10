@@ -20,3 +20,21 @@ Route::post('/registukangs', [TukangController::class, 'registersTukang']); // b
 Route::put('/tukangs/{tukang_id}', [TukangController::class, 'updateTukang']); // bisa
 Route::delete('/tukangs/{tukang_id}', [TukangController::class, 'destroyTukang']); // bisa
 Route::post('/tukanglogin', [TukangController::class, 'loginTukang']); // bisa
+
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
+
+Route::middleware('auth:tukang')->get('/tukangs', function (Request $request) {
+    return $request->user();
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logoutuser', [\App\Http\Controllers\RegisController::class, 'logout']);
+
+    
+});
+
+Route::middleware('auth:tukang')->group(function () {
+    Route::post('/logouttukang', [\App\Http\Controllers\TukangController::class, 'logout']);
+});

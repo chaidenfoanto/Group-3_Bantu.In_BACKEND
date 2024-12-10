@@ -6,33 +6,34 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class RegisController extends Controller
 {
     public function indexUser()
     {
-        $customer = User::all(); // Ganti Customer dengan Regis
+        $user = User::all(); // Ganti user dengan Regis
         return response()->json([
             'status' => true,
-            'message' => 'Customers retrieved successfully',
-            'data' => $customer
+            'message' => 'users retrieved successfully',
+            'data' => $user
         ], 200);
     }
 
     public function showUser($id_user)
     {
-        $customer = User::findOrFail($id_user); // Ganti Customer dengan Regis
+        $user = User::findOrFail($id_user); // Ganti user dengan Regis
         return response()->json([
             'status' => true,
-            'message' => 'Customer found successfully',
+            'message' => 'user found successfully',
             'data' => [
-                'id_user' => $customer->id_user,
-                'name' => $customer->name,
-                'email' => $customer->email,
+                'id_user' => $user->id_user,
+                'name' => $user->name,
+                'email' => $user->email,
                 'password' => 'Tidak ditampilkan secara umum',
-                'no_hp' => $customer->no_hp,
-                'alamat' => $customer->alamat,
-                'deskripsi_alamat' => $customer->deskripsi_alamat,
+                'no_hp' => $user->no_hp,
+                'alamat' => $user->alamat,
+                'deskripsi_alamat' => $user->deskripsi_alamat,
                 'rating' => 0,
                 'total_rating' => 0, // Inisialisasi total rating sebagai 0 sebelum diupdate di proses rating
             ]
@@ -59,8 +60,8 @@ class RegisController extends Controller
             ], 422);
         }
 
-        // Membuat customer dan meng-hash password sebelum menyimpannya
-        $customer = User::create([
+        // Membuat user dan meng-hash password sebelum menyimpannya
+        $user = User::create([
             'id_user' => $request->id_user,
             'name' => $request->name,
             'email' => $request->email,
@@ -68,20 +69,24 @@ class RegisController extends Controller
             'no_hp' => $request->no_hp,
         ]);
 
+        $token = $user->createToken('authToken')->plainTextToken;
+
         // Kirimkan response tanpa password
         return response()->json([
             'status' => true,
-            'message' => 'Customer created successfully',
+            'message' => 'user created successfully',
             'data' => [
-                'id_user' => $customer->id_user,
-                'name' => $customer->name,
-                'email' => $customer->email,
+                'id_user' => $user->id_user,
+                'name' => $user->name,
+                'email' => $user->email,
                 'password' => 'Tidak ditampilkan secara umum',
-                'no_hp' => $customer->no_hp,
-                'alamat' => $customer->alamat,
-                'deskripsi_alamat' => $customer->deskripsi_alamat,
+                'no_hp' => $user->no_hp,
+                'alamat' => $user->alamat,
+                'deskripsi_alamat' => $user->deskripsi_alamat,
                 'rating' => 0,
                 'total_rating' => 0,
+                'access_token' => $token,
+                'token_type' => 'Bearer'
             ]
         ], 201);
     }
@@ -136,13 +141,15 @@ class RegisController extends Controller
                 'id_user' => $user->id_user,
                 'name' => $user->name,
                 'email' => $user->email,
+                'access_token' => $token,
+                'token_type' => 'Bearer'
             ],
         ], 200);
     }
 
     public function updateUser(Request $request, $id_user)
     {
-        $customer = User::where('id_user', $id_user)->firstOrFail();
+        $user = User::where('id_user', $id_user)->firstOrFail();
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
@@ -161,36 +168,44 @@ class RegisController extends Controller
             ], 422);
         }
 
-        $customer->update($request->except('password'));
+        $user->update($request->except('password'));
         
         if ($request->filled('password')) {
-            $customer->password = Hash::make($request->password);
-            $customer->save();
+            $user->password = Hash::make($request->password);
+            $user->save();
         }
 
         return response()->json([
             'status' => true,
-            'message' => 'Customer updated successfully',
+            'message' => 'user updated successfully',
             'data' => [
-                'id_user' => $customer->id_user,
-                'name' => $customer->name,
-                'email' => $customer->email,
+                'id_user' => $user->id_user,
+                'name' => $user->name,
+                'email' => $user->email,
                 'password' => 'Tidak ditampilkan secara umum',
-                'no_hp' => $customer->no_hp,
-                'alamat' => $customer->alamat,
-                'deskripsi_alamat' => $customer->deskripsi_alamat,
+                'no_hp' => $user->no_hp,
+                'alamat' => $user->alamat,
+                'deskripsi_alamat' => $user->deskripsi_alamat,
             ]
         ], 200);
     }
 
     public function destroyUser($id_user)
     {
-        $customer = User::findOrFail($id_user); // Ganti Customer dengan Regis
-        $customer->delete();
+        $user = User::findOrFail($id_user); // Ganti user dengan Regis
+        $user->delete();
         
         return response()->json([
             'status' => true,
-            'message' => 'Customer deleted successfully'
+            'message' => 'user deleted successfully'
         ], 204);
+    }
+
+    public function logout()
+    {
+        Auth::user()->tokens()->delete();
+        return response()->json([
+            'message' => 'logout success'
+        ]);
     }
 }
