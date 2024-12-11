@@ -208,5 +208,6 @@ class TukangController extends Controller
         return response()->json([
             'message' => 'Logout successful for Tukang',
         ], 200);
+        
     }
 }
