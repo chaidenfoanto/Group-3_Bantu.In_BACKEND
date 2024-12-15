@@ -70,6 +70,10 @@ class User extends Authenticatable
         });
     }
 
+    public function tukang() {
+        return $this->hasMany(TukangModel::class);
+    }
+
     public function ratinguser() {
         return $this->hasMany(RatingUserModel::class, 'id_user', 'id_user');
     }
@@ -80,5 +84,9 @@ class User extends Authenticatable
 
     public function pesanan() {
         return $this->hasMany(PesananModel::class, 'id_user', 'id_user');
+    }
+
+    public function location() {
+        return $this->hasMany(LocationModel::class, 'id_user', 'id_user');
     }
 }

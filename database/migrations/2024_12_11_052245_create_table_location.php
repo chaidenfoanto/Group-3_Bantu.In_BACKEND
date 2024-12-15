@@ -4,6 +4,9 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+use App\Models\User;
+use App\Models\TukangModel;
+
 return new class extends Migration
 {
     /**
@@ -11,10 +14,28 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('table_location', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('location')) {
+            Schema::create('location', function (Blueprint $table) {
+                $table->id();
+                $table->string('id_user', 20);
+                $table->string('id_tukang', 20);
+                $table->boolean('is_started')->default(false);
+                $table->boolean('is_completed')->default(false);
+                $table->json('origin')->nullable();
+                $table->json('destination')->nullable();
+                $table->string('destination_name')->nullable();
+                $table->json('tukang_location')->nullable();
+                $table->timestamps();
+
+                $table->foreign('id_user')
+                ->references('id_user')
+                ->on('users');
+
+                $table->foreign('id_tukang')
+                    ->references('id_tukang')
+                    ->on('tukang'); 
+            });
+        }
     }
 
     /**

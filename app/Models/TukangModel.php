@@ -12,6 +12,7 @@ use App\Models\LokasiTukangModel;
 use App\Models\RatingTukangModel;
 use App\Models\RatingUserModel;
 use App\Models\PesananModel;
+use App\Models\User;
 
 class TukangModel extends Model
 {
@@ -44,8 +45,9 @@ class TukangModel extends Model
         });
     }
 
-    public function lokasi() {
-        return $this->hasOne(LokasiTukangModel::class, 'id_tukang', 'id_tukang');
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function ratinguser() {
@@ -58,5 +60,9 @@ class TukangModel extends Model
 
     public function pesanan() {
         return $this->hasMany(PesananModel::class, 'id_tukang', 'id_tukang');
+    }
+
+    public function lokasi() {
+        return $this->hasMany(LocationModel::class, 'id_tukang', 'id_tukang');
     }
 }
