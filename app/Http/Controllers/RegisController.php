@@ -208,4 +208,5 @@ class RegisController extends Controller
             'message' => 'logout success'
         ]);
     }
+    
 }
