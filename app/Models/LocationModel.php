@@ -11,15 +11,37 @@ class LocationModel extends Model
 {
     use HasFactory;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'id_user',
+        'id_tukang',
+        'is_started',
+        'is_completed',
+        'origin',
+        'destination',
+        'destination_name',
+        'tukang_location',
+    ];
 
+    protected $casts = [
+        'origin' => 'array',
+        'destination' => 'array',
+        'tukang_location' => 'array',
+        'is_started' => 'boolean',
+        'is_completed' => 'boolean',
+    ];
+
+    protected $primaryKey = 'id_lokasi';
+    public $incrementing = true;
+    protected $keyType = 'integer';
     protected $table = 'location';
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class, 'id_user', 'id_user');
     }
 
-    public function tukang() {
+    public function tukang()
+    {
         return $this->belongsTo(TukangModel::class, 'id_tukang', 'id_tukang');
     }
 }

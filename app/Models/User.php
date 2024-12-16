@@ -87,6 +87,6 @@ class User extends Authenticatable
     }
 
     public function location() {
-        return $this->hasMany(LocationModel::class, 'id_user', 'id_user');
+        return $this->hasOne(LocationModel::class, 'id_user', 'id_user');
     }
 }

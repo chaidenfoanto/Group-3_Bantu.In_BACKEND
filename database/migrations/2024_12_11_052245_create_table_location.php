@@ -16,9 +16,9 @@ return new class extends Migration
     {
         if (!Schema::hasTable('location')) {
             Schema::create('location', function (Blueprint $table) {
-                $table->id();
+                $table->integer('id_lokasi')->primary()->unsigned()->autoIncrement();
                 $table->string('id_user', 20);
-                $table->string('id_tukang', 20);
+                $table->string('id_tukang', 20)->nullable();
                 $table->boolean('is_started')->default(false);
                 $table->boolean('is_completed')->default(false);
                 $table->json('origin')->nullable();

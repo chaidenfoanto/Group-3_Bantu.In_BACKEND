@@ -21,20 +21,27 @@ Route::put('/tukangs/{tukang_id}', [TukangController::class, 'updateTukang']); /
 Route::delete('/tukangs/{tukang_id}', [TukangController::class, 'destroyTukang']); // bisa
 Route::post('/tukanglogin', [TukangController::class, 'loginTukang']); // bisa
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-Route::middleware('auth:tukang')->get('/tukangs', function (Request $request) {
-    return $request->user();
-});
-
+// Grup untuk middleware 'auth:sanctum'
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+
     Route::post('/logoutuser', [\App\Http\Controllers\RegisController::class, 'logout']);
 
-    
+    Route::post('/trip', [TripController::class, 'store']);
+    Route::get('/trip/{locate}', [TripController::class, 'show']);
+    Route::post('/trip/{trip}/accept', [TripController::class, 'accept']);
+    Route::post('/trip/{trip}/start', [TripController::class, 'start']);
+    Route::post('/trip/{trip}/end', [TripController::class, 'end']);
+    Route::post('/trip/{trip}/location', [TripController::class, 'location']);
 });
 
+// Grup untuk middleware 'auth:tukang'
 Route::middleware('auth:tukang')->group(function () {
+    Route::get('/tukangs', function (Request $request) {
+        return $request->user();
+    });
+
     Route::post('/logouttukang', [\App\Http\Controllers\TukangController::class, 'logout']);
 });
