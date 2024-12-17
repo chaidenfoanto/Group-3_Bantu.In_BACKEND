@@ -14,20 +14,22 @@ use App\Models\LocationModel;
 use App\Models\User;
 
 
-class StartLocationTukang
+class StartLocationTukang implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $locate;
     private $user;
+    private $message;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(LocationModel $locate, User $user)
+    public function __construct(LocationModel $locate, User $user, $message)
     {
         $this->locate = $locate;
         $this->user = $user;
+        $this->message = $message;
     }
 
     /**
@@ -39,6 +41,16 @@ class StartLocationTukang
     {
         return [
             new Channel('passeger_' . $this->user->id),
+        ];
+    }
+
+    public function broadcastAs() {
+        return'startLocationTukang';
+    }
+
+    public function broadcastWith() {
+        return [
+            "message" => "Tukang has been broadcast"
         ];
     }
 }

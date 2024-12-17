@@ -4,13 +4,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RegisController;
 use App\Http\Controllers\TukangController;
+use App\Http\Controllers\LocationController;
 
 //user
-Route::get('/customers', [RegisController::class, 'indexUser']); // bisa 
-Route::get('/customers/{id_user}', [RegisController::class, 'showUser']); // bisa 
 Route::post('/regists', [RegisController::class, 'registersUser']); // bisa
-Route::put('/customers/{id_user}', [RegisController::class, 'updateUser']); // 
-Route::delete('/customers/{id_user}', [RegisController::class, 'destroyUser']); // bisa
 Route::post('/login', [RegisController::class, 'loginUser']); // bisa
 
 //tukang
@@ -27,14 +24,18 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
+    Route::get('/customers', [RegisController::class, 'indexUser']); // bisa 
+    Route::get('/customers/{id_user}', [RegisController::class, 'showUser']); // bisa 
+    Route::put('/customers/{id_user}', [RegisController::class, 'updateUser']); // 
+    Route::delete('/customers/{id_user}', [RegisController::class, 'destroyUser']); // bisa
+
     Route::post('/logoutuser', [\App\Http\Controllers\RegisController::class, 'logout']);
 
-    Route::post('/trip', [TripController::class, 'store']);
-    Route::get('/trip/{locate}', [TripController::class, 'show']);
-    Route::post('/trip/{trip}/accept', [TripController::class, 'accept']);
-    Route::post('/trip/{trip}/start', [TripController::class, 'start']);
-    Route::post('/trip/{trip}/end', [TripController::class, 'end']);
-    Route::post('/trip/{trip}/location', [TripController::class, 'location']);
+    Route::get('/locatetukang/{id_user}', [TripController::class, 'getTukangLocation']);
+    Route::post('/start/{locate}', [LocationController::class, 'start']); // Start the trip
+    Route::post('/end/{locate}', [LocationController::class, 'end']); // End the trip
+
+    Route::put('/update-location/{locate}', [LocationController::class, 'updateLocation']);
 });
 
 // Grup untuk middleware 'auth:tukang'

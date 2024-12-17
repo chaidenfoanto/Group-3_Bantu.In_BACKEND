@@ -14,7 +14,7 @@ use App\Models\LocationModel;
 use App\Models\User;
 
 
-class UpdatedLocationTukang
+class UpdatedLocationTukang implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 

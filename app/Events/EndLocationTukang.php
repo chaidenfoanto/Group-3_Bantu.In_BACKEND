@@ -13,20 +13,22 @@ use Illuminate\Contracts\Event\ShouldBroadcastNow;
 use App\Models\LocationModel;
 use App\Models\User;
 
-class EndLocationTukang
+class EndLocationTukang implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $locate;
     private $user;
+    public $message;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(LocationModel $locate, User $user)
+    public function __construct(LocationModel $locate, User $user, $message)
     {
         $this->locate = $locate;
         $this->user = $user;
+        $this->message = $message;
     }
 
     /**
@@ -38,6 +40,16 @@ class EndLocationTukang
     {
         return [
             new Channel('passeger_' . $this->user->id),
+        ];
+    }
+
+    public function broadcastAs() {
+        return 'endLocationTukang';
+    }
+
+    public function broadcastWith() {
+        return [
+            "message" => "Tukang has been slain"
         ];
     }
 }
