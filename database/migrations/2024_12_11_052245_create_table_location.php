@@ -24,17 +24,22 @@ return new class extends Migration
                 $table->json('origin')->nullable();
                 $table->json('destination')->nullable();
                 $table->string('destination_name')->nullable();
-                $table->json('tukang_location')->nullable();
+                $table->json('tukang_location')->nullable()->default(json_encode([
+                    'lat' => -5.1492075,   
+                    'lng' => 119.3952915   
+                ]));
                 $table->timestamps();
 
                 $table->foreign('id_user')
-                ->references('id_user')
-                ->on('users');
+                    ->references('id_user')
+                    ->on('users')
+                    ->onDelete('cascade');
 
                 $table->foreign('id_tukang')
                     ->references('id_tukang')
-                    ->on('tukang'); 
-            });
+                    ->on('tukang')
+                    ->onDelete('cascade'); // Tambahkan ini
+                });
         }
     }
 

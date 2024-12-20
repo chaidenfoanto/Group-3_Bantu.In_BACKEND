@@ -60,35 +60,39 @@ class RegisController extends Controller
             ], 422);
         }
 
-        // Membuat user dan meng-hash password sebelum menyimpannya
-        $user = User::create([
-            'id_user' => $request->id_user,
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password), // Hash password saat penyimpanan
-            'no_hp' => $request->no_hp,
-        ]);
+        try {
+            // Membuat user dan meng-hash password sebelum menyimpannya
+            $user = User::create([
+                'id_user' => $request->id_user,
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password), // Hash password saat penyimpanan
+                'no_hp' => $request->no_hp,
+            ]);
 
-        $token = $user->createToken('authToken')->plainTextToken;
+            $token = $user->createToken('authToken')->plainTextToken;
 
-        // Kirimkan response tanpa password
-        return response()->json([
-            'status' => true,
-            'message' => 'user created successfully',
-            'data' => [
-                'id_user' => $user->id_user,
-                'name' => $user->name,
-                'email' => $user->email,
-                'password' => 'Tidak ditampilkan secara umum',
-                'no_hp' => $user->no_hp,
-                'alamat' => $user->alamat,
-                'deskripsi_alamat' => $user->deskripsi_alamat,
-                'rating' => 0,
-                'total_rating' => 0,
-                'access_token' => $token,
-                'token_type' => 'Bearer'
-            ]
-        ], 201);
+            // Kirimkan response tanpa password
+            return response()->json([
+                'status' => true,
+                'message' => 'user created successfully',
+                'data' => [
+                    'id_user' => $user->id_user,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'password' => 'Tidak ditampilkan secara umum',
+                    'no_hp' => $user->no_hp,
+                    'alamat' => $user->alamat,
+                    'deskripsi_alamat' => $user->deskripsi_alamat,
+                    'rating' => 0,
+                    'total_rating' => 0,
+                    'access_token' => $token,
+                    'token_type' => 'Bearer'
+                ]
+            ], 201);
+        } catch (ValidationException $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function loginUser(Request $request)
@@ -168,26 +172,30 @@ class RegisController extends Controller
             ], 422);
         }
 
-        $user->update($request->except('password'));
-        
-        if ($request->filled('password')) {
-            $user->password = Hash::make($request->password);
-            $user->save();
-        }
+        try {
+                $user->update($request->except('password'));
+            
+            if ($request->filled('password')) {
+                $user->password = Hash::make($request->password);
+                $user->save();
+            }
 
-        return response()->json([
-            'status' => true,
-            'message' => 'user updated successfully',
-            'data' => [
-                'id_user' => $user->id_user,
-                'name' => $user->name,
-                'email' => $user->email,
-                'password' => 'Tidak ditampilkan secara umum',
-                'no_hp' => $user->no_hp,
-                'alamat' => $user->alamat,
-                'deskripsi_alamat' => $user->deskripsi_alamat,
-            ]
-        ], 200);
+            return response()->json([
+                'status' => true,
+                'message' => 'user updated successfully',
+                'data' => [
+                    'id_user' => $user->id_user,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'password' => 'Tidak ditampilkan secara umum',
+                    'no_hp' => $user->no_hp,
+                    'alamat' => $user->alamat,
+                    'deskripsi_alamat' => $user->deskripsi_alamat,
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An unexpected error occurred.'], 500);
+        }
     }
 
     public function destroyUser($id_user)
