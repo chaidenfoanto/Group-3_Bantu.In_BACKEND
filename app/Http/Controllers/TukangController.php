@@ -20,18 +20,21 @@ class TukangController extends Controller
         ], 200);
     }
 
-    public function showTukang($id_tukang)
+    public function showTukang(Request $request)
     {
-        $tukang = TukangModel::findOrFail($id_tukang); // Ganti tukang dengan Regis
+        $tukang = auth()->user();
+
+        if (!$tukang) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User tidak terautentikasi.',
+            ], 401);
+        }
+
         return response()->json([
             'status' => true,
             'message' => 'tukang found successfully',
-            'data' => [
-                'id_tukang' => $tukang->id_tukang,
-                'name' => $tukang->name,
-                'email' => $tukang->email,
-                'password' => 'Tidak ditampilkan secara umum'
-            ]
+            'data' => $tukang
         ], 200);
     }
 
@@ -70,7 +73,6 @@ class TukangController extends Controller
             'foto_diri' => $request->file('foto_diri')->store('public/foto_diri'), //
         ]);
 
-        $token = $tukang->createToken('authToken')->plainTextToken;
 
         // Kirimkan response tanpa password
         return response()->json([
@@ -85,8 +87,6 @@ class TukangController extends Controller
                 'spesialisasi' => $tukang->spesialisasi,
                 'ktp' => $tukang->ktp, // Ditampilkan URL file ktp,
                 'foto_diri' => $tukang->foto_diri, // Ditampilkan URL file foto diri,
-                'access_token' => $token,
-                'token_type' => 'Bearer'
             ]
         ], 201);
     }
@@ -147,37 +147,58 @@ class TukangController extends Controller
         ], 200);
     }
 
-    public function updateTukang(Request $request, $id_tukang)
+    public function updateTukang(Request $request)
     {
-        $tukang = TukangModel::where('id_tukang', $id_tukang)->firstOrFail();
+        // Ambil tukang yang terautentikasi
+        $tukang = auth()->user();
 
+        if (!$tukang) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User tidak terautentikasi.',
+            ], 401);
+        }
+
+        // Validasi data input
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:tukang,email,' . $id_tukang  . ',id_tukang', // Sesuaikan dengan nama tabel
+            'email' => 'required|string|email|max:255|unique:tukang,email,' . $tukang->id_tukang  . ',id_tukang', // Sesuaikan dengan nama tabel
             'password' => 'nullable|string|min:8',
             'no_hp' => 'required|string|min:11',
             'spesialisasi' => 'required|string',
-            'foto_diri' => 'nullable|file|mimes:jpeg,png,jpg|max:2048', // Sesuaikan dengan nama field ktp
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'status' => false,
+                'status' => 'error',
                 'message' => 'Validation error',
                 'errors' => $validator->errors()
             ], 422);
         }
 
-        $tukang->update($request->except('password'));
-        
+        // Update data tukang (kecuali password)
+        $tukang->update($request->except('password', 'foto_diri'));
+
+        // Jika ada password baru, hash dan simpan
         if ($request->filled('password')) {
             $tukang->password = Hash::make($request->password);
-            $tukang->save();
         }
 
+        // Jika ada foto_diri baru, simpan di storage dan simpan path-nya
+        if ($request->hasFile('foto_diri')) {
+            // Simpan foto di storage dan dapatkan path-nya
+            $path = $request->file('foto_diri')->store('public/foto_tukang');
+
+            // Update path foto diri di database
+            $tukang->foto_diri = Storage::url($path);
+        }
+
+        // Simpan perubahan ke database
+        $tukang->save();
+
         return response()->json([
-            'status' => true,
-            'message' => 'tukang updated successfully',
+            'status' => 'success',
+            'message' => 'Tukang updated successfully',
             'data' => [
                 'id_tukang' => $tukang->id_tukang,
                 'name' => $tukang->name,
@@ -185,20 +206,40 @@ class TukangController extends Controller
                 'password' => 'Tidak ditampilkan secara umum',
                 'no_hp' => $tukang->no_hp,
                 'spesialisasi' => $tukang->spesialisasi,
-                'foto_diri' => $tukang->foto_diri // Ditampilkan URL file foto diri,
             ]
         ], 200);
     }
 
-    public function destroyTukang($id_tukang)
+
+    public function destroyTukang(Request $request)
     {
-        $tukang = TukangModel::findOrFail($id_tukang); // Ganti tukang dengan Regis
-        $tukang->delete();
-        
-        return response()->json([
-            'status' => true,
-            'message' => 'tukang deleted successfully'
-        ], 204);
+        // Ambil user yang sedang terautentikasi
+        $tukang = auth()->user();
+
+        // Jika user tidak terautentikasi
+        if (!$tukang) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User tidak terautentikasi.',
+            ], 401);
+        }
+
+        try {
+            // Hapus data user yang terautentikasi
+            $tukang->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'User deleted successfully.'
+            ], 200); // Gunakan status 200 untuk memberikan konfirmasi bahwa permintaan berhasil
+        } catch (\Exception $e) {
+            // Tangani kesalahan jika terjadi masalah saat penghapusan
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred while deleting the user.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
     public function logout(Request $request)
     {

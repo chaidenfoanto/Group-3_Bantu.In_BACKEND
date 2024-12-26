@@ -20,9 +20,17 @@ class RegisController extends Controller
         ], 200);
     }
 
-    public function showUser($id_user)
+    public function showUser(Request $request)
     {
-        $user = User::findOrFail($id_user); // Ganti user dengan Regis
+        $user = auth()->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User tidak terautentikasi.',
+            ], 401);
+        }
+
         return response()->json([
             'status' => true,
             'message' => 'user found successfully',
@@ -70,8 +78,6 @@ class RegisController extends Controller
                 'no_hp' => $request->no_hp,
             ]);
 
-            $token = $user->createToken('authToken')->plainTextToken;
-
             // Kirimkan response tanpa password
             return response()->json([
                 'status' => true,
@@ -86,8 +92,6 @@ class RegisController extends Controller
                     'deskripsi_alamat' => $user->deskripsi_alamat,
                     'rating' => 0,
                     'total_rating' => 0,
-                    'access_token' => $token,
-                    'token_type' => 'Bearer'
                 ]
             ], 201);
         } catch (ValidationException $e) {
@@ -151,19 +155,28 @@ class RegisController extends Controller
         ], 200);
     }
 
-    public function updateUser(Request $request, $id_user)
+    public function updateUser(Request $request)
     {
-        $user = User::where('id_user', $id_user)->firstOrFail();
+        $user = auth()->user();
 
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User tidak terautentikasi.',
+            ], 401);
+        }
+
+        // Validasi data input
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $id_user  . ',id_user', // Sesuaikan dengan nama tabel
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id_user . ',id_user',
             'password' => 'nullable|string|min:8',
             'no_hp' => 'required|string|min:11',
             'alamat' => 'nullable|string',
-            'deskripsi_alamat' => 'nullable|string' // Sesuaikan dengan nama field deskripsi alamat
+            'deskripsi_alamat' => 'nullable|string'
         ]);
 
+        // Jika validasi gagal
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
@@ -173,16 +186,21 @@ class RegisController extends Controller
         }
 
         try {
-                $user->update($request->except('password'));
-            
+            // Persiapkan data untuk update
+            $dataToUpdate = $request->except('password');
+
+            // Jika password diberikan, lakukan hash dan update
             if ($request->filled('password')) {
-                $user->password = Hash::make($request->password);
-                $user->save();
+                $dataToUpdate['password'] = Hash::make($request->password);
             }
 
+            // Update user
+            $user->update($dataToUpdate);
+
+            // Kembalikan response sukses
             return response()->json([
                 'status' => true,
-                'message' => 'user updated successfully',
+                'message' => 'User updated successfully',
                 'data' => [
                     'id_user' => $user->id_user,
                     'name' => $user->name,
@@ -193,20 +211,47 @@ class RegisController extends Controller
                     'deskripsi_alamat' => $user->deskripsi_alamat,
                 ]
             ], 200);
+
         } catch (\Exception $e) {
-            return response()->json(['error' => 'An unexpected error occurred.'], 500);
+            // Tangani kesalahan jika terjadi
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An unexpected error occurred.',
+                'error' => $e->getMessage(), // Untuk debugging
+            ], 500);
         }
     }
 
-    public function destroyUser($id_user)
+
+    public function destroyUser()
     {
-        $user = User::findOrFail($id_user); // Ganti user dengan Regis
-        $user->delete();
-        
-        return response()->json([
-            'status' => true,
-            'message' => 'user deleted successfully'
-        ], 204);
+        // Ambil user yang sedang terautentikasi
+        $user = auth()->user();
+
+        // Jika user tidak terautentikasi
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User tidak terautentikasi.',
+            ], 401);
+        }
+
+        try {
+            // Hapus data user yang terautentikasi
+            $user->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'User deleted successfully.'
+            ], 200); // Gunakan status 200 untuk memberikan konfirmasi bahwa permintaan berhasil
+        } catch (\Exception $e) {
+            // Tangani kesalahan jika terjadi masalah saat penghapusan
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred while deleting the user.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function logout()

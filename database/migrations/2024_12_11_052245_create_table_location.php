@@ -24,10 +24,6 @@ return new class extends Migration
                 $table->json('origin')->nullable();
                 $table->json('destination')->nullable();
                 $table->string('destination_name')->nullable();
-                $table->json('tukang_location')->nullable()->default(json_encode([
-                    'lat' => -5.1492075,   
-                    'lng' => 119.3952915   
-                ]));
                 $table->timestamps();
 
                 $table->foreign('id_user')

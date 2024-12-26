@@ -12,22 +12,20 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Event\ShouldBroadcastNow;
 use App\Models\LocationModel;
 use App\Models\User;
+use App\Models\TukangModel;
 
-
-class UpdatedLocationTukang implements ShouldBroadcastNow
+class UpdatedLocationTukang 
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $locate;
     private $user;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(LocationModel $locate, User $user)
+    public function __construct(TukangModel $tukang)
     {
-        $this->locate = $locate;
-        $this->user = $user;
+        $this->tukang = $tukang;
     }
 
     /**
@@ -38,7 +36,15 @@ class UpdatedLocationTukang implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
-            new Channel('passeger_' . $this->user->id),
+            new Channel('tukang.' . $this->tukang->id_tukang),
+        ];
+    }
+
+    public function broadcastWith()
+    {
+        // Menyertakan data lokasi tukang terbaru
+        return [
+            'tukang_location' => $this->tukang->tukang_location,
         ];
     }
 }

@@ -24,6 +24,10 @@ return new class extends Migration
             $table->binary('foto_diri');
             $table->float('rating')->default(0);
             $table->float('total_rating')->default(0);
+            $table->json('tukang_location')->nullable()->default(json_encode([
+                'lat' => -5.1492075,   
+                'lng' => 119.3952915   
+            ]));
             $table->rememberToken();
             $table->timestamps();
         });

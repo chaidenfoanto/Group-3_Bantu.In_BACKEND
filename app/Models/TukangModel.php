@@ -33,7 +33,12 @@ class TukangModel extends Model
         'no_hp',
         'spesialisasi',
         'ktp',
-        'foto_diri'
+        'foto_diri',
+        'tukang_location'
+    ];
+
+    protected $casts = [
+        'tukang_location' => 'array',
     ];
 
     protected static function booted()

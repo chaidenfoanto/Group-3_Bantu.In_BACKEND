@@ -8,7 +8,7 @@ use App\Http\Controllers\LocationController;
 
 //user
 Route::post('/regists', [RegisController::class, 'registersUser']); // bisa
-Route::post('/login', [RegisController::class, 'loginUser']); // bisa
+Route::post('/login', [RegisController::class, 'loginUser'])->name('login');
 
 //tukang
 Route::post('/registukangs', [TukangController::class, 'registersTukang']); // bisa
@@ -21,17 +21,23 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::get('/customers', [RegisController::class, 'indexUser']); // bisa 
-    Route::get('/customers/{id_user}', [RegisController::class, 'showUser']); // bisa 
-    Route::put('/customers/{id_user}', [RegisController::class, 'updateUser']); // 
-    Route::delete('/customers/{id_user}', [RegisController::class, 'destroyUser']); // bisa
+    Route::get('/customers', [RegisController::class, 'showUser']); // bisa 
+    Route::put('/customers', [RegisController::class, 'updateUser']); // 
+    Route::delete('/customers', [RegisController::class, 'destroyUser']); // bisa
 
     Route::post('/logoutuser', [\App\Http\Controllers\RegisController::class, 'logout']);
 
-    Route::get('/locatetukang/{id_user}', [LocationController::class, 'getTukangLocation']);
-    Route::post('/start/{locate}', [LocationController::class, 'start']); // Start the trip
-    Route::post('/end/{locate}', [LocationController::class, 'end']); // End the trip
+    Route::post('/lokasiuser', [LocationController::class, 'store']);
 
-    Route::put('/update-location/{locate}', [LocationController::class, 'updateLocation']);
+    // Route untuk memulai perjalanan tukang
+    Route::post('/lokasiuser/{locate}/start', [LocationController::class, 'start']);
+    
+    // Route untuk mengakhiri perjalanan tukang
+    Route::post('/lokasiuser/{locate}/end', [LocationController::class, 'end']);
+    
+    // buat get untuk user dapat tukangnya
+    Route::get('/lokasitukangterdekat', [LocationController::class, 'getNearestTukang']);
+    // Route::get('/lokasitukangterdekat/{id_user}', [LocationController::class, 'getNearestTukang']);
 });
 
 // Grup untuk middleware 'auth:tukang'
@@ -40,10 +46,12 @@ Route::middleware('auth:tukang')->group(function () {
         return $request->user();
     });
 
-    Route::get('/tukangs', [TukangController::class, 'indexTukang']); //bisa
-    Route::get('/tukangs/{tukang_id}', [TukangController::class, 'showTukang']); // bisa
-    Route::put('/tukangs/{tukang_id}', [TukangController::class, 'updateTukang']); // bisa
-    Route::delete('/tukangs/{tukang_id}', [TukangController::class, 'destroyTukang']); // bisa
+    Route::get('/tukangsa', [TukangController::class, 'indexTukang']); //bisa
+    Route::get('/tukangspropil', [TukangController::class, 'showTukang']); // bisa
+    Route::put('/tukangsupdate', [TukangController::class, 'updateTukang']); // bisa
+    Route::delete('/tukangshapus', [TukangController::class, 'destroyTukang']); // bisa
 
     Route::post('/logouttukang', [\App\Http\Controllers\TukangController::class, 'logout']);
+
+    Route::put('/lokasiuser/tukang/{id_tukang}/update', [LocationController::class, 'updateLocation']);
 });

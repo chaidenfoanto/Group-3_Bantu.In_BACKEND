@@ -19,13 +19,11 @@ class LocationModel extends Model
         'origin',
         'destination',
         'destination_name',
-        'tukang_location',
     ];
 
     protected $casts = [
         'origin' => 'array',
         'destination' => 'array',
-        'tukang_location' => 'array',
         'is_started' => 'boolean',
         'is_completed' => 'boolean',
     ];
