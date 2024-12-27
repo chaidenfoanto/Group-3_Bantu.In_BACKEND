@@ -107,48 +107,63 @@ class LocationController extends Controller
     }
     
 
-    public function start(Request $request, LocationModel $locate)
+    public function start(Request $request)
     {
-        if ($locate->is_started) {
-            return response()->json(['message' => 'This work has already started.'], 400);
+        $user = $request->user(); // Mendapatkan pengguna yang sedang login
+
+        // Cari lokasi berdasarkan pengguna login dan belum dimulai
+        $locate = LocationModel::where('id_user', $user->id_user)
+            ->where('is_started', false)
+            ->first();
+
+        if (!$locate) {
+            return response()->json(['message' => 'Tidak ada perjalanan yang dapat dimulai.'], 404);
         }
 
-        if (!$locate->id_tukang) {
-            return response()->json(['message' => 'No tukang assigned to this trip.'], 400);
+        if ($locate->is_started) {
+            return response()->json(['message' => 'Perjalanan telah dimulai sebelumnya.'], 400);
         }
 
         $locate->update(['is_started' => true]);
 
-        StartLocationTukang::dispatch($locate, $request->user());
+        StartLocationTukang::dispatch($locate, $user);
 
         return response()->json([
-            'message' => 'The trip has started.',
-            'locate' => $locate->load('tukang.user')
+            'message' => 'Perjalanan telah dimulai.',
+            'locate' => $locate->load('tukang.user'),
         ], 200);
     }
 
-    /**
-     * Tandai perjalanan telah selesai oleh tukang.
-     */
-    public function end(Request $request, LocationModel $locate)
+
+    public function end(Request $request)
     {
-        if (!$locate->is_started) {
-            return response()->json(['message' => 'Work has not started yet.'], 400);
+        $user = $request->user(); // Mendapatkan pengguna yang sedang login
+
+        // Cari lokasi berdasarkan pengguna login dan sudah dimulai
+        $locate = LocationModel::where('id_user', $user->id_user)
+            ->where('is_started', true)
+            ->where('is_completed', false)
+            ->first();
+
+        if (!$locate) {
+            return response()->json(['message' => 'Tidak ada perjalanan yang sedang berlangsung.'], 404);
         }
 
         if ($locate->is_completed) {
-            return response()->json(['message' => 'Work is already completed.'], 400);
+            return response()->json(['message' => 'Perjalanan telah selesai sebelumnya.'], 400);
         }
 
         $locate->update(['is_completed' => true]);
 
-        EndLocationTukang::dispatch($locate, $request->user());
+        EndLocationTukang::dispatch($locate, $user);
 
         return response()->json([
-            'message' => 'The trip has ended successfully.',
-            'locate' => $locate->load('tukang.user')
+            'message' => 'Perjalanan telah selesai.',
+            'locate' => $locate->load('tukang.user'),
         ], 200);
     }
+
+
 
     /**
      * Perbarui lokasi tukang saat perjalanan berlangsung.
@@ -264,6 +279,70 @@ class LocationController extends Controller
             'message' => 'Tidak ada tukang yang berada dalam jangkauan radius.',
         ], 404);
     }
+
+    public function getRandomTukang(Request $request)
+    {
+        // Ambil user yang terautentikasi
+        $user = auth()->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User tidak terautentikasi.',
+            ], 401);
+        }
+
+        // Cari lokasi berdasarkan id_user
+        $locate = LocationModel::where('id_user', $user->id_user)->first();
+
+        if (!$locate) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Lokasi untuk user tidak ditemukan.',
+            ], 404);
+        }
+
+        $origin = json_decode($locate->origin, true);
+        $radius = 10; // Radius default 10 km
+
+        // Ambil semua tukang dari database
+        $tukangs = TukangModel::all();
+
+        // Hitung jarak dan filter tukang berdasarkan radius
+        $tukangTerdekat = $tukangs->map(function ($tukang) use ($origin) {
+            $tukangLocation = is_string($tukang->tukang_location)
+                ? json_decode($tukang->tukang_location, true)
+                : $tukang->tukang_location;
+
+            $tukang->distance = $this->calculateDistance($origin, $tukangLocation);
+            return $tukang;
+        })->filter(function ($tukang) use ($radius) {
+            return $tukang->distance <= $radius;
+        })->values(); // Reset index setelah filter
+
+        if ($tukangTerdekat->isEmpty()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Tidak ada tukang yang berada dalam jangkauan radius.',
+            ], 404);
+        }
+
+        // Pilih tukang secara acak
+        $randomTukang = $tukangTerdekat->random();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Tukang acak berhasil ditemukan.',
+            'data' => [
+                'tukang_id' => $randomTukang->id_tukang,
+                'name' => $randomTukang->name,
+                'rating' => $randomTukang->rating,
+                'tukang_location' => $randomTukang->tukang_location,
+                'distance' => $randomTukang->distance,
+            ],
+        ], 200);
+    }
+
 
 
     // public function getNearestTukang(Request $request, $id_user)

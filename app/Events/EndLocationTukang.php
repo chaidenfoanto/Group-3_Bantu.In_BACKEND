@@ -24,12 +24,13 @@ class EndLocationTukang implements ShouldBroadcastNow
     /**
      * Create a new event instance.
      */
-    public function __construct(LocationModel $locate, User $user, $message)
+    public function __construct(LocationModel $locate, User $user)
     {
         $this->locate = $locate;
         $this->user = $user;
-        $this->message = $message;
+        $this->message = "Perjalanan selesai.";
     }
+
 
     /**
      * Get the channels the event should broadcast on.

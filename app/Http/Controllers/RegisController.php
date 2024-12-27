@@ -56,7 +56,9 @@ class RegisController extends Controller
             'email' => 'required|string|email|unique:users|max:255', // Sesuaikan dengan nama tabel
             'password' => 'required|string|min:8',
             'password_confirmation' => 'required|string|min:8|same:password', // Sesuaikan dengan nama field password
-            'no_hp' => 'required|string|min:11'
+            'no_hp' => 'required|string|min:11',
+            'alamat' => 'required|string',
+            'deskripsi_alamat' => 'required|string', // Inisialisasi deskripsi_alamat sebagai null sebelum diupdate di proses rating
         ]);
 
         // Jika validasi gagal
@@ -76,23 +78,15 @@ class RegisController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password), // Hash password saat penyimpanan
                 'no_hp' => $request->no_hp,
+                'alamat' => $request->alamat,
+                'deskripsi_alamat' => $request->deskripsi_alamat, // Inisialisasi deskripsi_alamat sebagai null sebelum diupdate di proses rating
             ]);
 
             // Kirimkan response tanpa password
             return response()->json([
                 'status' => true,
                 'message' => 'user created successfully',
-                'data' => [
-                    'id_user' => $user->id_user,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'password' => 'Tidak ditampilkan secara umum',
-                    'no_hp' => $user->no_hp,
-                    'alamat' => $user->alamat,
-                    'deskripsi_alamat' => $user->deskripsi_alamat,
-                    'rating' => 0,
-                    'total_rating' => 0,
-                ]
+                'data' => $user
             ], 201);
         } catch (ValidationException $e) {
             return response()->json(['error' => $e->getMessage()], 500);
