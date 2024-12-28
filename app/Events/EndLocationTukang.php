@@ -13,7 +13,7 @@ use Illuminate\Contracts\Event\ShouldBroadcastNow;
 use App\Models\LocationModel;
 use App\Models\User;
 
-class EndLocationTukang implements ShouldBroadcastNow
+class EndLocationTukang 
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 

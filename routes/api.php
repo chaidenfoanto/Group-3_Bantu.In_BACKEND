@@ -29,11 +29,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/lokasiuser', [LocationController::class, 'store']);
 
-    // Route untuk memulai perjalanan tukang
-    Route::post('/lokasiuser/{locate}/start', [LocationController::class, 'start']);
-    
-    // Route untuk mengakhiri perjalanan tukang
-    Route::post('/lokasiuser/{locate}/end', [LocationController::class, 'end']);
+    Route::patch('/location/start', [LocationController::class, 'start']);
+
+    // Route untuk mengakhiri perjalanan
+    Route::patch('/location/end', [LocationController::class, 'end']);
     
     // buat get untuk user dapat tukangnya
     Route::get('/lokasitukangterdekat', [LocationController::class, 'getNearestTukang']);

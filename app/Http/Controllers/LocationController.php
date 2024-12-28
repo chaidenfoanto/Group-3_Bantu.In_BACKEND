@@ -109,59 +109,68 @@ class LocationController extends Controller
 
     public function start(Request $request)
     {
-        $user = $request->user(); // Mendapatkan pengguna yang sedang login
+        // Ambil user yang terautentikasi
+        $user = $request->user();  // Mendapatkan user yang terautentikasi melalui middleware auth
 
-        // Cari lokasi berdasarkan pengguna login dan belum dimulai
-        $locate = LocationModel::where('id_user', $user->id_user)
-            ->where('is_started', false)
-            ->first();
+        // Cari lokasi berdasarkan user
+        $locate = LocationModel::where('id_user', $user->id_user)->first();
 
         if (!$locate) {
-            return response()->json(['message' => 'Tidak ada perjalanan yang dapat dimulai.'], 404);
+            return response()->json(['message' => 'Lokasi tidak ditemukan untuk user ini.'], 404);
         }
 
         if ($locate->is_started) {
             return response()->json(['message' => 'Perjalanan telah dimulai sebelumnya.'], 400);
         }
 
+        if (!$locate->id_tukang) {
+            return response()->json(['message' => 'Tidak ada tukang yang ditugaskan untuk perjalanan ini.'], 400);
+        }
+
+        // Update status perjalanan menjadi mulai
         $locate->update(['is_started' => true]);
 
+        // Dispatch event untuk memulai perjalanan
         StartLocationTukang::dispatch($locate, $user);
 
         return response()->json([
             'message' => 'Perjalanan telah dimulai.',
-            'locate' => $locate->load('tukang.user'),
+            'locate' => $locate->load('tukang.user') // Mengambil data tukang yang terkait
         ], 200);
     }
 
-
     public function end(Request $request)
     {
-        $user = $request->user(); // Mendapatkan pengguna yang sedang login
+        // Ambil user yang terautentikasi
+        $user = $request->user();  // Mendapatkan user yang terautentikasi melalui middleware auth
 
-        // Cari lokasi berdasarkan pengguna login dan sudah dimulai
-        $locate = LocationModel::where('id_user', $user->id_user)
-            ->where('is_started', true)
-            ->where('is_completed', false)
-            ->first();
+        // Cari lokasi berdasarkan user
+        $locate = LocationModel::where('id_user', $user->id_user)->first();
 
         if (!$locate) {
-            return response()->json(['message' => 'Tidak ada perjalanan yang sedang berlangsung.'], 404);
+            return response()->json(['message' => 'Lokasi tidak ditemukan untuk user ini.'], 404);
+        }
+
+        if (!$locate->is_started) {
+            return response()->json(['message' => 'Perjalanan belum dimulai.'], 400);
         }
 
         if ($locate->is_completed) {
             return response()->json(['message' => 'Perjalanan telah selesai sebelumnya.'], 400);
         }
 
+        // Update status perjalanan menjadi selesai
         $locate->update(['is_completed' => true]);
 
+        // Dispatch event untuk mengakhiri perjalanan
         EndLocationTukang::dispatch($locate, $user);
 
         return response()->json([
             'message' => 'Perjalanan telah selesai.',
-            'locate' => $locate->load('tukang.user'),
+            'locate' => $locate->load('tukang.user') // Mengambil data tukang yang terkait
         ], 200);
     }
+
 
 
 
@@ -238,7 +247,7 @@ class LocationController extends Controller
         }
 
         $origin = json_decode($locate->origin, true);
-        $radius = 10; // Radius default 10 km
+        $radius = 2;
 
         $tukangs = TukangModel::all();
 
