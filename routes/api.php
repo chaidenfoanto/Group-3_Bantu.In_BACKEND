@@ -36,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // buat get untuk user dapat tukangnya
     Route::get('/lokasitukangterdekat', [LocationController::class, 'getNearestTukang']);
+    Route::get('/lokasitukangterdekattarik', [LocationController::class, 'getNearestTukangTarik']);
     // Route::get('/lokasitukangterdekat/{id_user}', [LocationController::class, 'getNearestTukang']);
 
     Route::get('/randomtukang', [LocationController::class, 'getRandomTukang']);

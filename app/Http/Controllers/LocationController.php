@@ -289,6 +289,73 @@ class LocationController extends Controller
         ], 404);
     }
 
+    public function getNearestTukangTarik(Request $request)
+    {
+        // Ambil user yang terautentikasi
+        $user = auth()->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User tidak terautentikasi.',
+            ], 401);
+        }
+
+        // Cari lokasi berdasarkan id_user
+        $locate = LocationModel::where('id_user', $user->id_user)->first();
+
+        if (!$locate) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Lokasi untuk user tidak ditemukan.',
+            ], 404);
+        }
+
+        $origin = json_decode($locate->origin, true);
+        $radius = 2;
+
+        $tukangs = TukangModel::all();
+
+        $tukangTerdekat = $tukangs->map(function ($tukang) use ($origin) {
+            // Pastikan decode JSON string ke array
+            $tukangLocation = is_string($tukang->tukang_location) 
+                ? json_decode($tukang->tukang_location, true)
+                : $tukang->tukang_location;
+                    
+            $tukang->distance = $this->calculateDistance($origin, $tukangLocation);
+            return $tukang;
+        });
+
+        $tukangTerdekat = $tukangTerdekat->filter(function ($tukang) use ($radius) {
+            return $tukang->distance <= $radius;
+        });
+
+        if ($tukangTerdekat->isNotEmpty()) {
+            $tukangTerdekat = $tukangTerdekat->sortBy('distance')->values();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Tukang terdekat berhasil ditemukan.',
+                'data' => $tukangTerdekat->map(function ($tukang) {
+                    return [
+                        'tukang_id' => $tukang->id_tukang,
+                        'name' => $tukang->name,
+                        'rating' => $tukang->rating,
+                        'tukang_location' => $tukang->tukang_location,
+                        'foto_diri' => $tukang->foto_diri,
+                        'spesialisasi' => $tukang->spesialisasi,
+                        'distance' => $tukang->distance,
+                    ];
+                }),
+            ], 200);
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Tidak ada tukang yang berada dalam jangkauan radius.',
+        ], 404);
+    }
+
     public function getRandomTukang(Request $request)
     {
         // Ambil user yang terautentikasi
@@ -347,6 +414,8 @@ class LocationController extends Controller
                 'name' => $randomTukang->name,
                 'rating' => $randomTukang->rating,
                 'tukang_location' => $randomTukang->tukang_location,
+                'foto_diri' => $randomTukang->foto_diri,
+                'spesialisasi' => $randomTukang->spesialisasi,
                 'distance' => $randomTukang->distance,
             ],
         ], 200);
