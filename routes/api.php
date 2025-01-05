@@ -20,7 +20,6 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
-    Route::get('/customers', [RegisController::class, 'indexUser']); // bisa 
     Route::get('/customers', [RegisController::class, 'showUser']); // bisa 
     Route::put('/customers', [RegisController::class, 'updateUser']); // 
     Route::delete('/customers', [RegisController::class, 'destroyUser']); // bisa
@@ -49,7 +48,6 @@ Route::middleware('auth:tukang')->group(function () {
         return $request->user();
     });
 
-    Route::get('/tukangsa', [TukangController::class, 'indexTukang']); //bisa
     Route::get('/tukangspropil', [TukangController::class, 'showTukang']); // bisa
     Route::put('/tukangsupdate', [TukangController::class, 'updateTukang']); // bisa
     Route::delete('/tukangshapus', [TukangController::class, 'destroyTukang']); // bisa

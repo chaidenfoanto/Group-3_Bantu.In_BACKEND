@@ -10,15 +10,15 @@ use Illuminate\Support\Facades\Auth;
 
 class RegisController extends Controller
 {
-    public function indexUser()
-    {
-        $user = User::all(); // Ganti user dengan Regis
-        return response()->json([
-            'status' => true,
-            'message' => 'users retrieved successfully',
-            'data' => $user
-        ], 200);
-    }
+    // public function indexUser()
+    // {
+    //     $user = User::all(); // Ganti user dengan Regis
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'users retrieved successfully',
+    //         'data' => $user
+    //     ], 200);
+    // }
 
     public function showUser(Request $request)
     {
