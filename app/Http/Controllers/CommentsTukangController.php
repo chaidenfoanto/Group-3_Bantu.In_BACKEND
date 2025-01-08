@@ -24,7 +24,7 @@ class CommentsTukangController extends Controller
         if (!$user->id_user) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Hanya tukang yang dapat memberi rating.',
+                'message' => 'Hanya user yang dapat memberi rating.',
             ], 403); 
         }
     
