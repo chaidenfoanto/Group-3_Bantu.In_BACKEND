@@ -24,7 +24,7 @@ class CommentsTukangController extends Controller
         if (!$user->id_user) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Hanya user yang dapat memberi rating.',
+                'message' => 'Hanya tukang yang dapat memberi rating.',
             ], 403); 
         }
     
@@ -49,26 +49,26 @@ class CommentsTukangController extends Controller
             // Update rating jika data sudah ada
             $rating->rating = $request->rating;
             $rating->save();
-    
-            return response()->json([
-                'status' => true,
-                'message' => 'Rating berhasil diperbarui.',
-                'data' => $rating
-            ], 200);
         } else {
             // Buat data baru jika rating belum ada
-            $newRating = RatingTukangModel::create([
+            $rating = RatingTukangModel::create([
                 'id_tukang' => $id_tukang,
                 'id_user' => $user->id_user,
                 'rating' => $request->rating,
             ]);
-    
-            return response()->json([
-                'status' => true,
-                'message' => 'Rating berhasil disimpan.',
-                'data' => $newRating
-            ], 201);
         }
+    
+        // Hitung rata-rata rating baru
+        $averageRating = RatingTukangModel::where('id_tukang', $id_tukang)->avg('rating');
+    
+        // Simpan rata-rata ke tabel User atau model terkait
+        TukangModel::where('id_tukang', $id_tukang)->update(['total_rating' => $averageRating]);
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'Rating berhasil disimpan dan rata-rata diperbarui.',
+            'data' => $rating
+        ], 201);
     }
     
     public function kasihulasanuser(Request $request, $id_tukang)

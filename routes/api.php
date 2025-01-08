@@ -45,7 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::put('/ulasan/tukang/{id_tukang}', [CommentsTukangController::class, 'kasihulasanuser']);
     Route::post('/rating/tukang/{id_tukang}', [CommentsTukangController::class, 'kasihratinguser']);
-    Route::get('/lihatratingxulasan/{id_tukang}', [CommentsTukangController::class, 'getKomentarTukang']);
+    Route::get('/lihatratingxulasan/{id_tukang}', [CommentsController::class, 'getKomentarTukang']);
 });
 
 // Grup untuk middleware 'auth:tukang'

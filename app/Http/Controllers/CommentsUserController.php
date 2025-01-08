@@ -49,26 +49,26 @@ class CommentsUserController extends Controller
             // Update rating jika data sudah ada
             $rating->rating = $request->rating;
             $rating->save();
-    
-            return response()->json([
-                'status' => true,
-                'message' => 'Rating berhasil diperbarui.',
-                'data' => $rating
-            ], 200);
         } else {
             // Buat data baru jika rating belum ada
-            $newRating = RatingUserModel::create([
+            $rating = RatingUserModel::create([
                 'id_user' => $id_user,
                 'id_tukang' => $tukang->id_tukang,
                 'rating' => $request->rating,
             ]);
-    
-            return response()->json([
-                'status' => true,
-                'message' => 'Rating berhasil disimpan.',
-                'data' => $newRating
-            ], 201);
         }
+    
+        // Hitung rata-rata rating baru
+        $averageRating = RatingUserModel::where('id_user', $id_user)->avg('rating');
+    
+        // Simpan rata-rata ke tabel User atau model terkait
+        User::where('id_user', $id_user)->update(['total_rating' => $averageRating]);
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'Rating berhasil disimpan dan rata-rata diperbarui.',
+            'data' => $rating
+        ], 201);
     }
     
     public function kasihulasanuser(Request $request, $id_user)

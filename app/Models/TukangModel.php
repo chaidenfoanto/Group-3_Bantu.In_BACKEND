@@ -43,6 +43,8 @@ class TukangModel extends Model
 
     protected static function booted()
     {
+        parent::boot();
+        
         static::creating(function ($tukang) {
             if (empty($tukang->id_tukang)) { // Jika id_user kosong
                 $tukang->id_tukang = Str::random(20); // Isi dengan string random sepanjang 20 karakter

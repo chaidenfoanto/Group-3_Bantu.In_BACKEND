@@ -63,6 +63,8 @@ class User extends Authenticatable
 
     protected static function booted()
     {
+        parent::boot();
+
         static::creating(function ($user) {
             if (empty($user->id_user)) { // Jika id_user kosong
                 $user->id_user = Str::random(20); // Isi dengan string random sepanjang 20 karakter
