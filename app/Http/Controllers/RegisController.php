@@ -164,7 +164,6 @@ class RegisController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id_user . ',id_user',
-            'password' => 'nullable|string|min:8',
             'no_hp' => 'required|string|min:11',
             'alamat' => 'nullable|string',
             'deskripsi_alamat' => 'nullable|string'
@@ -199,10 +198,67 @@ class RegisController extends Controller
                     'id_user' => $user->id_user,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'password' => 'Tidak ditampilkan secara umum',
                     'no_hp' => $user->no_hp,
                     'alamat' => $user->alamat,
                     'deskripsi_alamat' => $user->deskripsi_alamat,
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            // Tangani kesalahan jika terjadi
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An unexpected error occurred.',
+                'error' => $e->getMessage(), // Untuk debugging
+            ], 500);
+        }
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User tidak terautentikasi.',
+            ], 401);
+        }
+
+        // Validasi data input
+        $validator = Validator::make($request->all(), [
+            'password' => 'nullable|string|min:8',
+            'password_confirmation' => 'required|string|min:8|same:password',
+        ]);
+
+        // Jika validasi gagal
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            // Persiapkan data untuk update
+            $dataToUpdate = $request->except('password');
+
+            // Jika password diberikan, lakukan hash dan update
+            if ($request->filled('password')) {
+                $dataToUpdate['password'] = Hash::make($request->password);
+            }
+
+            // Update user
+            $user->update($dataToUpdate);
+
+            // Kembalikan response sukses
+            return response()->json([
+                'status' => true,
+                'message' => 'User updated successfully',
+                'data' => [
+                    'id_user' => $user->id_user,
+                    'password' => $user->password,
                 ]
             ], 200);
 

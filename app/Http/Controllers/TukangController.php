@@ -10,15 +10,15 @@ use Illuminate\Support\Facades\Auth;
 
 class TukangController extends Controller
 {
-    public function indexTukang()
-    {
-        $tukang = TukangModel::all(); // Ganti tukang dengan Regis
-        return response()->json([
-            'status' => true,
-            'message' => 'tukangs retrieved successfully',
-            'data' => $tukang
-        ], 200);
-    }
+    // public function indexTukang()
+    // {
+    //     $tukang = TukangModel::all(); // Ganti tukang dengan Regis
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'tukangs retrieved successfully',
+    //         'data' => $tukang
+    //     ], 200);
+    // }
 
     public function showTukang(Request $request)
     {
@@ -163,7 +163,6 @@ class TukangController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:tukang,email,' . $tukang->id_tukang  . ',id_tukang', // Sesuaikan dengan nama tabel
-            'password' => 'nullable|string|min:8',
             'no_hp' => 'required|string|min:11',
             'spesialisasi' => 'required|string',
         ]);
@@ -203,11 +202,68 @@ class TukangController extends Controller
                 'id_tukang' => $tukang->id_tukang,
                 'name' => $tukang->name,
                 'email' => $tukang->email,
-                'password' => 'Tidak ditampilkan secara umum',
                 'no_hp' => $tukang->no_hp,
                 'spesialisasi' => $tukang->spesialisasi,
             ]
         ], 200);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User tidak terautentikasi.',
+            ], 401);
+        }
+
+        // Validasi data input
+        $validator = Validator::make($request->all(), [
+            'password' => 'nullable|string|min:8',
+            'password_confirmation' => 'required|string|min:8|same:password',
+        ]);
+
+        // Jika validasi gagal
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            // Persiapkan data untuk update
+            $dataToUpdate = $request->except('password');
+
+            // Jika password diberikan, lakukan hash dan update
+            if ($request->filled('password')) {
+                $dataToUpdate['password'] = Hash::make($request->password);
+            }
+
+            // Update user
+            $user->update($dataToUpdate);
+
+            // Kembalikan response sukses
+            return response()->json([
+                'status' => true,
+                'message' => 'Tukang updated successfully',
+                'data' => [
+                    'id_tukang' => $user->id_tukang,
+                    'password' => $user->password,
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            // Tangani kesalahan jika terjadi
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An unexpected error occurred.',
+                'error' => $e->getMessage(), // Untuk debugging
+            ], 500);
+        }
     }
 
 

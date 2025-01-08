@@ -15,9 +15,9 @@ return new class extends Migration
             $table->integer('id_ratinguser')->primary()->unsigned()->autoIncrement();
             $table->string('id_user', 20);
             $table->string('id_tukang', 20);
-            $table->integer('rating');
-            $table->text('ulasan');
-            $table->datetime('tanggal_rating');
+            $table->integer('rating')->default(0);
+            $table->text('ulasan')->nullable();
+            $table->datetime('tanggal_rating')->nullable();
             $table->timestamps();
 
             $table->foreign('id_user')

@@ -24,6 +24,7 @@ class RatingTukangModel extends Model
         'id_tukang',
         'rating',
         'ulasan',
+        'tanggal_rating'
     ];
 
     public $timestamps = true;

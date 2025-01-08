@@ -194,35 +194,43 @@ class LocationController extends Controller
     //     return $locate;
     // }
 
-    // public function updateLocation(Request $request, $id_tukang)
-    // {
-    //     // Validasi input yang diperlukan
-    //     $request->validate([
-    //         'tukang_location' => 'required|array',
-    //         'tukang_location.lat' => 'required|numeric',
-    //         'tukang_location.lng' => 'required|numeric',
-    //     ]);
+    public function updateLocation(Request $request)
+    {
+        $tukang = auth()->user();
 
-    //     $tukang = TukangModel::findOrFail($id_tukang);
+        if (!$tukang) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User tidak terautentikasi.',
+            ], 401);
+        }
+        // Validasi input yang diperlukan
+        $request->validate([
+            'tukang_location' => 'required|array',
+            'tukang_location.lat' => 'required|numeric',
+            'tukang_location.lng' => 'required|numeric',
+        ]);
 
-    //     // Mencari tukang berdasarkan id_tukang
-    //     // $tukang = TukangModel::findOrFail($id_tukang);
+        // $tukang = TukangModel::findOrFail($id_tukang);
 
-    //     // Update lokasi tukang
-    //     $tukang->update([
-    //         'tukang_location' => $request->tukang_location,
-    //     ]);
+        // Mencari tukang berdasarkan id_tukang
+        // $tukang = TukangModel::findOrFail($id_tukang);
 
-    //     // Menyiarkan event untuk broadcasting ke klien
-    //     UpdatedLocationTukang::dispatch($tukang, $request->user());
+        // Update lokasi tukang
+        $tukang->update([
+            'tukang_location' => $request->tukang_location,
+        ]);
 
-    //     // Kembalikan respon untuk menunjukkan lokasi tukang berhasil diperbarui
-    //     return response()->json([
-    //         'status' => 'success',
-    //         'message' => 'Lokasi tukang berhasil diperbarui',
-    //         'data' => $tukang
-    //     ]);
-    // }
+        // Menyiarkan event untuk broadcasting ke klien
+        UpdatedLocationTukang::dispatch($tukang, $request->user());
+
+        // Kembalikan respon untuk menunjukkan lokasi tukang berhasil diperbarui
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Lokasi tukang berhasil diperbarui',
+            'data' => $tukang
+        ]);
+    }
 
     public function getNearestTukang(Request $request)
     {

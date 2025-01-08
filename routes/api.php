@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RegisController;
 use App\Http\Controllers\TukangController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\CommentsUserController;
+use App\Http\Controllers\CommentsTukangController;
 
 //user
 Route::post('/regists', [RegisController::class, 'registersUser']); // bisa
@@ -22,6 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/customers', [RegisController::class, 'showUser']); // bisa 
     Route::put('/customers', [RegisController::class, 'updateUser']); // 
+    Route::put('/resetpass', [RegisController::class, 'resetPassword']); // 
     Route::delete('/customers', [RegisController::class, 'destroyUser']); // bisa
 
     Route::post('/logoutuser', [\App\Http\Controllers\RegisController::class, 'logout']);
@@ -40,6 +43,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/randomtukang', [LocationController::class, 'getRandomTukang']);
 
+    Route::put('/ulasan/tukang/{id_tukang}', [CommentsTukangController::class, 'kasihulasanuser']);
+    Route::post('/rating/tukang/{id_tukang}', [CommentsTukangController::class, 'kasihratinguser']);
+    Route::get('/lihatratingxulasan/{id_tukang}', [CommentsTukangController::class, 'getKomentarTukang']);
 });
 
 // Grup untuk middleware 'auth:tukang'
@@ -51,8 +57,13 @@ Route::middleware('auth:tukang')->group(function () {
     Route::get('/tukangspropil', [TukangController::class, 'showTukang']); // bisa
     Route::put('/tukangsupdate', [TukangController::class, 'updateTukang']); // bisa
     Route::delete('/tukangshapus', [TukangController::class, 'destroyTukang']); // bisa
+    Route::put('/resetpasstukang', [TukangController::class, 'resetPassword']);
 
     Route::post('/logouttukang', [\App\Http\Controllers\TukangController::class, 'logout']);
 
-    Route::put('/lokasiuser/tukang/{id_tukang}/update', [LocationController::class, 'updateLocation']);
+    Route::put('/lokasiuser/tukang/update', [LocationController::class, 'updateLocation']);
+
+    Route::put('/ulasan/user/{id_user}', [CommentsUserController::class, 'kasihulasanuser']);
+    Route::post('/rating/user/{id_user}', [CommentsUserController::class, 'kasihratinguser']);
+    Route::get('/lihatratingxulasan/{id_user}', [CommentsUserController::class, 'getKomentarUser']);
 });

@@ -23,6 +23,7 @@ return new class extends Migration
             $table->text('deskripsi_alamat')->default('alamat saya ada didekat toko bbla bla bla');
             $table->float('rating')->default(0);
             $table->float('total_rating')->default(0);
+            $table->binary('foto_diri')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
