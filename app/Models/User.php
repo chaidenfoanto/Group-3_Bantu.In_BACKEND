@@ -35,7 +35,8 @@ class User extends Authenticatable
         'password',
         'no_hp',
         'alamat',
-        'deskripsi_alamat'
+        'deskripsi_alamat',
+        'foto_diri'
     ];
 
     /**

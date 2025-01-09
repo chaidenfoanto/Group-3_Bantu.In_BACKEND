@@ -26,7 +26,6 @@ class BiayaModel extends Model
     // Field yang dapat diisi secara mass-assignment
     protected $fillable = [
         'biaya_servis',
-        'biaya_admin',
         'biaya_total',
     ];
 
@@ -36,7 +35,6 @@ class BiayaModel extends Model
     // Cast untuk kolom decimal
     protected $casts = [
         'biaya_servis' => 'decimal:2',
-        'biaya_admin' => 'decimal:2',
         'biaya_total' => 'decimal:2',
     ];
 

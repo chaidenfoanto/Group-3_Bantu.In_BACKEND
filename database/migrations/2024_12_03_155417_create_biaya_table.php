@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('biaya', function (Blueprint $table) {
             $table->integer('id_biaya')->primary()->unsigned()->autoIncrement();
             $table->decimal('biaya_servis', 10, 2);
-            $table->decimal('biaya_admin', 10, 2);
+            $table->decimal('biaya_admin')->default(1000);
             $table->decimal('biaya_total', 10, 2);
             $table->timestamps();
         });

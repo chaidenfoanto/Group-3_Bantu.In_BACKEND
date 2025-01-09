@@ -7,6 +7,7 @@ use App\Models\TukangModel;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class TukangController extends Controller
 {
@@ -161,10 +162,10 @@ class TukangController extends Controller
 
         // Validasi data input
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:tukang,email,' . $tukang->id_tukang  . ',id_tukang', // Sesuaikan dengan nama tabel
-            'no_hp' => 'required|string|min:11',
-            'spesialisasi' => 'required|string',
+            'name' => 'nullable|string|max:255',
+            'email' => 'nullable|string|email|max:255|unique:tukang,email,' . $tukang->id_tukang  . ',id_tukang', // Sesuaikan dengan nama tabel
+            'no_hp' => 'nullable|string|min:11',
+            'spesialisasi' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -178,11 +179,7 @@ class TukangController extends Controller
         // Update data tukang (kecuali password)
         $tukang->update($request->except('password', 'foto_diri'));
 
-        // Jika ada password baru, hash dan simpan
-        if ($request->filled('password')) {
-            $tukang->password = Hash::make($request->password);
-        }
-
+        
         // Jika ada foto_diri baru, simpan di storage dan simpan path-nya
         if ($request->hasFile('foto_diri')) {
             // Simpan foto di storage dan dapatkan path-nya
@@ -206,6 +203,50 @@ class TukangController extends Controller
                 'spesialisasi' => $tukang->spesialisasi,
             ]
         ], 200);
+    }
+
+    public function updateFotoDiri(Request $request)
+    {
+        $tukang = auth()->user();
+
+        if (!$tukang) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User tidak terautentikasi.',
+            ], 401);
+        }
+
+        try {
+            // Ambil file dari binary body
+            $file = $request->getContent(); // Mendapatkan data file dari body
+            $fileName = 'foto_diri_' . $tukang->id . '_' . time() . '.jpg';
+            $filePath = 'foto_diri/' . $fileName;
+
+            // Simpan file ke storage
+            Storage::disk('public')->put($filePath, $file);
+
+            // Hapus foto lama jika ada
+            if ($tukang->foto_diri && Storage::exists($tukang->foto_diri)) {
+                Storage::delete($tukang->foto_diri);
+            }
+
+            // Update path foto diri di database
+            $tukang->update(['foto_diri' => $filePath]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Foto diri berhasil diperbarui.',
+                'data' => [
+                    'foto_diri_url' => Storage::url($filePath),
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan saat memperbarui foto diri.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function resetPassword(Request $request)

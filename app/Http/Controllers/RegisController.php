@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+
 
 class RegisController extends Controller
 {
@@ -162,9 +164,9 @@ class RegisController extends Controller
 
         // Validasi data input
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id_user . ',id_user',
-            'no_hp' => 'required|string|min:11',
+            'name' => 'nullable|string|max:255',
+            'email' => 'nullable|string|email|max:255|unique:users,email,' . $user->id_user . ',id_user',
+            'no_hp' => 'nullable|string|min:11',
             'alamat' => 'nullable|string',
             'deskripsi_alamat' => 'nullable|string'
         ]);
@@ -210,6 +212,50 @@ class RegisController extends Controller
                 'status' => 'error',
                 'message' => 'An unexpected error occurred.',
                 'error' => $e->getMessage(), // Untuk debugging
+            ], 500);
+        }
+    }
+
+    public function updateFotoDiri(Request $request)
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User tidak terautentikasi.',
+            ], 401);
+        }
+
+        try {
+            // Ambil file dari binary body
+            $file = $request->getContent(); // Mendapatkan data file dari body
+            $fileName = 'foto_diri_' . $user->id . '_' . time() . '.jpg';
+            $filePath = 'foto_diri/' . $fileName;
+
+            // Simpan file ke storage
+            Storage::disk('public')->put($filePath, $file);
+
+            // Hapus foto lama jika ada
+            if ($user->foto_diri && Storage::exists($user->foto_diri)) {
+                Storage::delete($user->foto_diri);
+            }
+
+            // Update path foto diri di database
+            $user->update(['foto_diri' => $filePath]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Foto diri berhasil diperbarui.',
+                'data' => [
+                    'foto_diri_url' => Storage::url($filePath),
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan saat memperbarui foto diri.',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

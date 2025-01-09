@@ -26,6 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/customers', [RegisController::class, 'updateUser']); // 
     Route::put('/resetpass', [RegisController::class, 'resetPassword']); // 
     Route::delete('/customers', [RegisController::class, 'destroyUser']); // bisa
+    Route::patch('/updatefotouser', [RegisController::class, 'updateFotoDiri']); // 
 
     Route::post('/logoutuser', [\App\Http\Controllers\RegisController::class, 'logout']);
 
@@ -58,6 +59,7 @@ Route::middleware('auth:tukang')->group(function () {
     Route::put('/tukangsupdate', [TukangController::class, 'updateTukang']); // bisa
     Route::delete('/tukangshapus', [TukangController::class, 'destroyTukang']); // bisa
     Route::put('/resetpasstukang', [TukangController::class, 'resetPassword']);
+    Route::patch('/updatefototukang', [TukangController::class, 'updateFotoDiri']);
 
     Route::post('/logouttukang', [\App\Http\Controllers\TukangController::class, 'logout']);
 
