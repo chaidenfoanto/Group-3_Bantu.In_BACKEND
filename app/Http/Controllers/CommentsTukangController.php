@@ -60,14 +60,20 @@ class CommentsTukangController extends Controller
     
         // Hitung rata-rata rating baru
         $averageRating = RatingTukangModel::where('id_tukang', $id_tukang)->avg('rating');
+
+        $totalRating = RatingTukangModel::where('id_tukang', $id_tukang)->count();
     
-        // Simpan rata-rata ke tabel User atau model terkait
-        TukangModel::where('id_tukang', $id_tukang)->update(['total_rating' => $averageRating]);
+        TukangModel::where('id_tukang', $id_tukang)->update([
+            'rating' => $averageRating,
+            'total_rating' => $totalRating,
+        ]);
     
         return response()->json([
             'status' => true,
             'message' => 'Rating berhasil disimpan dan rata-rata diperbarui.',
-            'data' => $rating
+            'data' => $rating,
+            'average_rating' => $averageRating,
+            'total_rating' => $totalRating
         ], 201);
     }
     

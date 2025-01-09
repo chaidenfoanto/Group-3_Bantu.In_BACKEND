@@ -60,14 +60,21 @@ class CommentsUserController extends Controller
     
         // Hitung rata-rata rating baru
         $averageRating = RatingUserModel::where('id_user', $id_user)->avg('rating');
+
+        $totalRating = RatingUserModel::where('id_user', $id_user)->count();
     
         // Simpan rata-rata ke tabel User atau model terkait
-        User::where('id_user', $id_user)->update(['total_rating' => $averageRating]);
+        User::where('id_user', $id_user)->update([
+            'rating' => $averageRating,
+            'total_rating' => $totalRating,
+        ]);
     
         return response()->json([
             'status' => true,
             'message' => 'Rating berhasil disimpan dan rata-rata diperbarui.',
-            'data' => $rating
+            'data' => $rating,
+            'average_rating' => $averageRating,
+            'total_rating' => $totalRating
         ], 201);
     }
     
