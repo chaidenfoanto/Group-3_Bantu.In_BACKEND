@@ -16,6 +16,7 @@ return new class extends Migration
             $table->decimal('biaya_servis', 10, 2);
             $table->decimal('biaya_admin')->default(1000);
             $table->decimal('biaya_total', 10, 2);
+            $table->string('jenis_servis', 100);
             $table->timestamps();
         });
     }

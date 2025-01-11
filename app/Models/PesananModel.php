@@ -11,6 +11,7 @@ use App\Models\DetailPesananModel;
 use App\Models\RatingUserModel;
 use App\Models\RatingTukangModel;
 use App\Models\HistoryModel;
+use Illuminate\Support\Str;
 
 class PesananModel extends Model
 {
@@ -37,7 +38,7 @@ class PesananModel extends Model
      *
      * @var string
      */
-    protected $keyType = 'int';
+    protected $keyType = 'string';
 
     protected $fillable = [
         'id_user',
@@ -51,6 +52,8 @@ class PesananModel extends Model
 
     protected static function booted()
     {
+        parent::boot();
+
         static::creating(function ($pesanan) {
             if (empty($pesanan->id_pesanan)) { // Jika id_user kosong
                 $pesanan->id_pesanan = Str::random(20); // Isi dengan string random sepanjang 20 karakter
@@ -83,7 +86,7 @@ class PesananModel extends Model
     }
 
     public function detailpesanan() {
-        return $this->hasOne(DetailPesananModel::class, 'id_pesanan', 'id_pesanan');
+        return $this->hasMany(DetailPesananModel::class, 'id_pesanan', 'id_pesanan');
     }
 
     public function history() {
