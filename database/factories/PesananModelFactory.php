@@ -29,7 +29,7 @@ class PesananModelFactory extends Factory
             'waktu_pesan' => now(), // Waktu pesan adalah sekarang
             'waktu_servis' => $this->faker->dateTimeBetween('+1 day', '+7 days'), // Waktu servis dalam rentang 1-7 hari ke depan
             'alamat_servis' => $this->faker->address, // Alamat servis acak
-            'metode_pembayaran' => $this->faker->randomElement(['Tunai', 'Non-tunai']), // Pilih metode pembayaran acak
+            'metode_pembayaran' => $this->faker->randomElement(['Cash', 'Non-cash']), // Pilih metode pembayaran acak
         ];
     }
 }

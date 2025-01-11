@@ -19,7 +19,7 @@ return new class extends Migration
             $table->datetime('waktu_pesan'); 
             $table->datetime('waktu_servis');
             $table->text('alamat_servis');
-            $table->enum('metode_pembayaran', ['Tunai', 'Non-tunai'])->default('Tunai');
+            $table->enum('metode_pembayaran', ['Cash', 'Non-cash'])->default('Cash');
             $table->timestamps();
 
             $table->foreign('id_user')
