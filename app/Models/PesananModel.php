@@ -48,6 +48,7 @@ class PesananModel extends Model
         'waktu_servis',
         'alamat_servis',
         'metode_pembayaran',
+        'jenis_servis',
     ];
 
     protected static function booted()

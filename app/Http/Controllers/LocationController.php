@@ -10,7 +10,9 @@ use App\Events\UpdatedLocationTukang;
 use App\Events\StartLocationTukang;
 use App\Events\EndLocationTukang;
 use Illuminate\Support\Facades\Validator;
-
+use App\Models\PesananModel;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 
 class LocationController extends Controller
@@ -364,7 +366,72 @@ class LocationController extends Controller
         ], 404);
     }
 
-    public function getRandomTukang(Request $request)
+    // public function getRandomTukang(Request $request)
+    // {
+    //     // Ambil user yang terautentikasi
+    //     $user = auth()->user();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'User tidak terautentikasi.',
+    //         ], 401);
+    //     }
+
+    //     // Cari lokasi berdasarkan id_user
+    //     $locate = LocationModel::where('id_user', $user->id_user)->first();
+
+    //     if (!$locate) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Lokasi untuk user tidak ditemukan.',
+    //         ], 404);
+    //     }
+
+    //     $origin = json_decode($locate->origin, true);
+    //     $radius = 10; // Radius default 10 km
+
+    //     // Ambil semua tukang dari database
+    //     $tukangs = TukangModel::all();
+
+    //     // Hitung jarak dan filter tukang berdasarkan radius
+    //     $tukangTerdekat = $tukangs->map(function ($tukang) use ($origin) {
+    //         $tukangLocation = is_string($tukang->tukang_location)
+    //             ? json_decode($tukang->tukang_location, true)
+    //             : $tukang->tukang_location;
+
+    //         $tukang->distance = $this->calculateDistance($origin, $tukangLocation);
+    //         return $tukang;
+    //     })->filter(function ($tukang) use ($radius) {
+    //         return $tukang->distance <= $radius;
+    //     })->values(); // Reset index setelah filter
+
+    //     if ($tukangTerdekat->isEmpty()) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Tidak ada tukang yang berada dalam jangkauan radius.',
+    //         ], 404);
+    //     }
+
+    //     // Pilih tukang secara acak
+    //     $randomTukang = $tukangTerdekat->random();
+
+    //     return response()->json([
+    //         'status' => 'success',
+    //         'message' => 'Tukang acak berhasil ditemukan.',
+    //         'data' => [
+    //             'tukang_id' => $randomTukang->id_tukang,
+    //             'name' => $randomTukang->name,
+    //             'rating' => $randomTukang->rating,
+    //             'tukang_location' => $randomTukang->tukang_location,
+    //             'foto_diri' => $randomTukang->foto_diri,
+    //             'spesialisasi' => $randomTukang->spesialisasi,
+    //             'distance' => $randomTukang->distance,
+    //         ],
+    //     ], 200);
+    // }
+
+    public function postTukangToPesanan(Request $request)
     {
         // Ambil user yang terautentikasi
         $user = auth()->user();
@@ -414,20 +481,59 @@ class LocationController extends Controller
         // Pilih tukang secara acak
         $randomTukang = $tukangTerdekat->random();
 
+        // Ambil jenis servis dari input request
+        $jenisServis = $request->input('jenis_servis'); // Mengambil jenis servis dari input user
+        if (!$jenisServis) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Jenis servis tidak ditemukan.',
+            ], 400);
+        }
+
+        // Tentukan biaya berdasarkan jenis servis
+        $biaya = DB::table('biaya')->where('jenis_servis', $jenisServis)->first();
+
+        if (!$biaya) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Biaya servis tidak ditemukan.',
+            ], 404);
+        }
+
+        // Buat data pesanan
+        $pesananData = [
+            'id_pesanan' => Str::uuid()->toString(),
+            'id_user' => $user->id_user,
+            'id_tukang' => $randomTukang->id_tukang,
+            'id_biaya' => $biaya->id_biaya,
+            'waktu_pesan' => now(),
+            'waktu_servis' => now()->addMinutes(30), // Waktu servis dimulai 30 menit dari sekarang
+            'alamat_servis' => $request->input('alamat_servis', $locate->destination_name),
+            'metode_pembayaran' => $request->input('metode_pembayaran', 'Cash'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+
+        $biayaInfo = [
+            'biaya_servis' => $biaya->biaya_servis,
+            'biaya_admin' => $biaya->biaya_admin,
+            'biaya_total' => $biaya->biaya_total
+        ];
+
+        // Simpan ke tabel pesanan
+        DB::table('pesanan')->insert($pesananData);
+
         return response()->json([
             'status' => 'success',
-            'message' => 'Tukang acak berhasil ditemukan.',
-            'data' => [
-                'tukang_id' => $randomTukang->id_tukang,
-                'name' => $randomTukang->name,
-                'rating' => $randomTukang->rating,
-                'tukang_location' => $randomTukang->tukang_location,
-                'foto_diri' => $randomTukang->foto_diri,
-                'spesialisasi' => $randomTukang->spesialisasi,
-                'distance' => $randomTukang->distance,
-            ],
-        ], 200);
+            'message' => 'Pesanan berhasil dibuat.',
+            'data' => $pesananData,
+            'biaya' => $biayaInfo
+        ], 201);
     }
+
+
+
+
 
 
 

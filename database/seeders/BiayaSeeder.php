@@ -37,6 +37,38 @@ class BiayaSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'biaya_servis' => 75000 + 55000, // Biaya servis gabungan
+                'biaya_admin' => 1000,
+                'biaya_total' => (75000 + 55000) + 1000,
+                'jenis_servis' => 'Cuci AC & Servis AC',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'biaya_servis' => 75000 + 400000, // Biaya servis gabungan
+                'biaya_admin' => 1000,
+                'biaya_total' => (75000 + 400000) + 1000,
+                'jenis_servis' => 'Cuci AC & Isi Freon',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'biaya_servis' => 55000 + 400000, // Biaya servis gabungan
+                'biaya_admin' => 1000,
+                'biaya_total' => (55000 + 400000) + 1000,
+                'jenis_servis' => 'Servis AC & Isi Freon',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'biaya_servis' => 75000 + 55000 + 400000, // Biaya servis gabungan semua
+                'biaya_admin' => 1000,
+                'biaya_total' => (75000 + 55000 + 400000) + 1000,
+                'jenis_servis' => 'Cuci AC, Servis AC & Isi Freon',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ];
 
         DB::table('biaya')->insert($data);
