@@ -43,6 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::get('/lokasitukangterdekat/{id_user}', [LocationController::class, 'getNearestTukang']);
 
     Route::post('/randomtukang', [LocationController::class, 'postTukangToPesanan']);
+    Route::post('/pesanantukangambil', [LocationController::class, 'postTukangToPesananambil']);
 
     Route::put('/ulasan/tukang/{id_tukang}', [CommentsTukangController::class, 'kasihulasanuser']);
     Route::post('/rating/tukang/{id_tukang}', [CommentsTukangController::class, 'kasihratinguser']);
