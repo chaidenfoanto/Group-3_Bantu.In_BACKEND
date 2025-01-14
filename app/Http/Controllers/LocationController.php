@@ -224,7 +224,7 @@ class LocationController extends Controller
         ]);
 
         // Menyiarkan event untuk broadcasting ke klien
-        UpdatedLocationTukang::dispatch($tukang, $request->user());
+        UpdatedLocationTukang::dispatch($tukang);
 
         // Kembalikan respon untuk menunjukkan lokasi tukang berhasil diperbarui
         return response()->json([
@@ -433,12 +433,19 @@ class LocationController extends Controller
 
     public function postTukangToPesanan(Request $request)
     {
-        // Validasi input jenis servis (pastikan dalam bentuk array)
-        $jenisServis = $request->input('jenis_servis');
-        if (!$jenisServis) {
+        // Validasi input
+        $validator = Validator::make($request->all(), [
+            'jenis_servis' => 'required|array',
+            'jenis_servis.*.jenis' => 'required|string|exists:biaya,jenis_servis',
+            'jenis_servis.*.kuantitas' => 'required|integer|min:1',
+            'alamat_servis' => 'required|string',
+            'metode_pembayaran' => 'required|in:Cash,Non-tunai'
+        ]);
+
+        if ($validator->fails()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Jenis servis tidak ditemukan.',
+                'message' => $validator->errors(),
             ], 400);
         }
 
@@ -460,13 +467,11 @@ class LocationController extends Controller
             ], 404);
         }
 
+        // Logic untuk mencari tukang terdekat
         $origin = json_decode($locate->origin, true);
-        $radius = 10; // Radius default 10 km
-
-        // Ambil semua tukang dari database
+        $radius = 10;
         $tukangs = TukangModel::all();
-
-        // Hitung jarak dan filter tukang berdasarkan radius
+        
         $tukangTerdekat = $tukangs->map(function ($tukang) use ($origin) {
             $tukangLocation = is_string($tukang->tukang_location)
                 ? json_decode($tukang->tukang_location, true)
@@ -484,48 +489,76 @@ class LocationController extends Controller
             ], 404);
         }
 
-        // Pilih tukang secara acak
         $randomTukang = $tukangTerdekat->random();
+        
+        // Hitung total biaya dan siapkan detail pesanan
+        $totalBiaya = 0;
+        $biayaAdmin = 1000;
+        $detailPesananData = [];
+        $latestBiaya = null;
+        
+        foreach ($request->jenis_servis as $servis) {
+            $biaya = DB::table('biaya')
+                ->where('jenis_servis', $servis['jenis'])
+                ->first();
 
-        // Tentukan biaya berdasarkan kombinasi jenis servis
-        $biaya = DB::table('biaya')
-            ->where('jenis_servis', $jenisServis)
-            ->first();
+            if (!$biaya) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Biaya untuk layanan "' . $servis['jenis'] . '" tidak ditemukan.',
+                ], 404);
+            }
 
-        if (!$biaya) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Biaya untuk kombinasi servis yang dipilih tidak ditemukan.',
-            ], 404);
+            $subtotal = $biaya->biaya_servis * $servis['kuantitas'];
+            $totalBiaya += $subtotal;
+            $biayaAdmin = $biaya->biaya_admin; // Biaya admin hanya sekali
+            $latestBiaya = $biaya; // Simpan biaya terakhir untuk referensi id_biaya
+
+            $detailPesananData[] = [
+                'nama_layanan' => $servis['jenis'],
+                'harga_layanan' => $biaya->biaya_servis,
+                'subtotal' => $subtotal,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
         }
 
-        // Buat data pesanan
+        $totalBiaya += $biayaAdmin; // Tambahkan biaya admin sekali di akhir
+
+        // Buat data pesanan utama
+        $idPesanan = Str::uuid()->toString();
         $pesananData = [
-            'id_pesanan' => Str::uuid()->toString(),
+            'id_pesanan' => $idPesanan,
             'id_user' => $user->id_user,
             'id_tukang' => $randomTukang->id_tukang,
-            'id_biaya' => $biaya->id_biaya,
+            'id_biaya' => $latestBiaya->id_biaya,
             'waktu_pesan' => now(),
             'waktu_servis' => now()->addMinutes(30),
-            'alamat_servis' => $request->input('alamat_servis', $locate->destination_name),
-            'metode_pembayaran' => $request->input('metode_pembayaran', 'Cash'),
+            'alamat_servis' => $request->alamat_servis,
+            'metode_pembayaran' => $request->metode_pembayaran,
+            'kuantitas' => collect($request->jenis_servis)->sum('kuantitas'),
             'created_at' => now(),
             'updated_at' => now(),
-        ];
-
-        $biayaInfo = [
-            'biaya_servis' => $biaya->biaya_servis,
-            'biaya_admin' => $biaya->biaya_admin,
-            'biaya_total' => $biaya->biaya_total,
-            'jenis_servis' => $biaya->jenis_servis
         ];
 
         try {
             DB::beginTransaction();
             
-            // Simpan ke tabel pesanan
+            // Simpan pesanan utama
             DB::table('pesanan')->insert($pesananData);
-            
+
+            // Simpan detail pesanan
+            foreach ($detailPesananData as $detail) {
+                DB::table('detail_pesanan')->insert([
+                    'id_pesanan' => $idPesanan,
+                    'nama_layanan' => $detail['nama_layanan'],
+                    'harga_layanan' => $detail['harga_layanan'],
+                    'subtotal' => $detail['subtotal'],
+                    'created_at' => $detail['created_at'],
+                    'updated_at' => $detail['updated_at'],
+                ]);
+            }
+
             DB::commit();
 
             return response()->json([
@@ -533,7 +566,9 @@ class LocationController extends Controller
                 'message' => 'Pesanan berhasil dibuat.',
                 'data' => [
                     'pesanan' => $pesananData,
-                    'biaya' => $biayaInfo,
+                    'detail_pesanan' => $detailPesananData,
+                    'total_biaya' => $totalBiaya,
+                    'biaya_admin' => $biayaAdmin,
                     'tukang' => [
                         'id_tukang' => $randomTukang->id_tukang,
                         'distance' => round($randomTukang->distance, 2) . ' km'
@@ -553,23 +588,23 @@ class LocationController extends Controller
     }
 
 
+
     public function postTukangToPesananambil(Request $request)
     {
         // Validasi input
-        $jenisServis = $request->input('jenis_servis');
-        $idTukang = $request->input('id_tukang'); // Tambah input id_tukang
+        $validator = Validator::make($request->all(), [
+            'jenis_servis' => 'required|array',
+            'jenis_servis.*.jenis' => 'required|string|exists:biaya,jenis_servis',
+            'jenis_servis.*.kuantitas' => 'required|integer|min:1',
+            'alamat_servis' => 'required|string',
+            'metode_pembayaran' => 'required|in:Cash,Non-tunai',
+            'id_tukang' => 'required|exists:tukang,id_tukang'
+        ]);
 
-        if (!$jenisServis) {
+        if ($validator->fails()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Jenis servis tidak ditemukan.',
-            ], 400);
-        }
-
-        if (!$idTukang) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'ID Tukang tidak ditemukan.',
+                'message' => $validator->errors(),
             ], 400);
         }
 
@@ -591,11 +626,10 @@ class LocationController extends Controller
             ], 404);
         }
 
+        // Cek tukang dan jarak
         $origin = json_decode($locate->origin, true);
-        $radius = 10; // Radius default 10 km
-
-        // Cari tukang berdasarkan id
-        $selectedTukang = TukangModel::find($idTukang);
+        $radius = 10;
+        $selectedTukang = TukangModel::find($request->id_tukang);
         
         if (!$selectedTukang) {
             return response()->json([
@@ -604,61 +638,87 @@ class LocationController extends Controller
             ], 404);
         }
 
-        // Hitung jarak tukang yang dipilih
         $tukangLocation = is_string($selectedTukang->tukang_location)
             ? json_decode($selectedTukang->tukang_location, true)
             : $selectedTukang->tukang_location;
         
         $distance = $this->calculateDistance($origin, $tukangLocation);
         
-        // Cek apakah tukang dalam radius
         if ($distance > $radius) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Tukang berada di luar jangkauan radius ' . $radius . ' km.',
-                'distance' => round($distance, 2) . ' km'
             ], 400);
         }
 
-        // Tentukan biaya berdasarkan kombinasi jenis servis
-        $biaya = DB::table('biaya')
-            ->where('jenis_servis', $jenisServis)
-            ->first();
+        // Hitung total biaya dan siapkan detail pesanan
+        $totalBiaya = 0;
+        $biayaAdmin = 1000;
+        $detailPesananData = [];
+        $latestBiaya = null;
 
-        if (!$biaya) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Biaya untuk kombinasi servis yang dipilih tidak ditemukan.',
-            ], 404);
+        foreach ($request->jenis_servis as $servis) {
+            $biaya = DB::table('biaya')
+                ->where('jenis_servis', $servis['jenis'])
+                ->first();
+
+            if (!$biaya) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Biaya untuk layanan "' . $servis['jenis'] . '" tidak ditemukan.',
+                ], 404);
+            }
+
+            $subtotal = $biaya->biaya_servis * $servis['kuantitas'];
+            $totalBiaya += $subtotal;
+            $biayaAdmin = $biaya->biaya_admin;
+            $latestBiaya = $biaya;
+
+            $detailPesananData[] = [
+                'nama_layanan' => $servis['jenis'],
+                'harga_layanan' => $biaya->biaya_servis,
+                'subtotal' => $subtotal,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
         }
 
-        // Buat data pesanan
+        $totalBiaya += $biayaAdmin;
+
+        // Buat data pesanan utama
+        $idPesanan = Str::uuid()->toString();
         $pesananData = [
-            'id_pesanan' => Str::uuid()->toString(),
+            'id_pesanan' => $idPesanan,
             'id_user' => $user->id_user,
             'id_tukang' => $selectedTukang->id_tukang,
-            'id_biaya' => $biaya->id_biaya,
+            'id_biaya' => $latestBiaya->id_biaya,
             'waktu_pesan' => now(),
             'waktu_servis' => now()->addMinutes(30),
-            'alamat_servis' => $request->input('alamat_servis', $locate->destination_name),
-            'metode_pembayaran' => $request->input('metode_pembayaran', 'Cash'),
+            'alamat_servis' => $request->alamat_servis,
+            'metode_pembayaran' => $request->metode_pembayaran,
+            'kuantitas' => collect($request->jenis_servis)->sum('kuantitas'),
             'created_at' => now(),
             'updated_at' => now(),
-        ];
-
-        $biayaInfo = [
-            'biaya_servis' => $biaya->biaya_servis,
-            'biaya_admin' => $biaya->biaya_admin,
-            'biaya_total' => $biaya->biaya_total,
-            'jenis_servis' => $biaya->jenis_servis
         ];
 
         try {
             DB::beginTransaction();
             
-            // Simpan ke tabel pesanan
+            // Simpan pesanan utama
             DB::table('pesanan')->insert($pesananData);
             
+            // Simpan detail pesanan
+            foreach ($detailPesananData as $detail) {
+                DB::table('detail_pesanan')->insert([
+                    'id_pesanan' => $idPesanan,
+                    'nama_layanan' => $detail['nama_layanan'],
+                    'harga_layanan' => $detail['harga_layanan'],
+                    'subtotal' => $detail['subtotal'],
+                    'created_at' => $detail['created_at'],
+                    'updated_at' => $detail['updated_at'],
+                ]);
+            }
+
             DB::commit();
 
             return response()->json([
@@ -666,7 +726,9 @@ class LocationController extends Controller
                 'message' => 'Pesanan berhasil dibuat.',
                 'data' => [
                     'pesanan' => $pesananData,
-                    'biaya' => $biayaInfo,
+                    'detail_pesanan' => $detailPesananData,
+                    'total_biaya' => $totalBiaya,
+                    'biaya_admin' => $biayaAdmin,
                     'tukang' => [
                         'id_tukang' => $selectedTukang->id_tukang,
                         'distance' => round($distance, 2) . ' km'
@@ -676,7 +738,6 @@ class LocationController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            
             return response()->json([
                 'status' => 'error',
                 'message' => 'Terjadi kesalahan saat membuat pesanan.',
@@ -684,9 +745,6 @@ class LocationController extends Controller
             ], 500);
         }
     }
-
-
-
 
     // public function getNearestTukang(Request $request, $id_user)
     // {

@@ -19,7 +19,8 @@ return new class extends Migration
             $table->datetime('waktu_pesan'); 
             $table->datetime('waktu_servis');
             $table->text('alamat_servis');
-            $table->enum('metode_pembayaran', ['Cash', 'Non-cash'])->default('Cash');
+            $table->enum('metode_pembayaran', ['Cash', 'Non-tunai'])->default('Cash');
+            $table->integer('kuantitas')->default(1);
             $table->timestamps();
 
             $table->foreign('id_user')

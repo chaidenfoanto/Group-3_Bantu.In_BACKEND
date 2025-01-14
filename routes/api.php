@@ -7,6 +7,7 @@ use App\Http\Controllers\TukangController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\CommentsUserController;
 use App\Http\Controllers\CommentsTukangController;
+use App\Http\Controllers\DetailPesananController;
 
 //user
 Route::post('/regists', [RegisController::class, 'registersUser']); // bisa
@@ -44,6 +45,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/randomtukang', [LocationController::class, 'postTukangToPesanan']);
     Route::post('/pesanantukangambil', [LocationController::class, 'postTukangToPesananambil']);
+
+    Route::get('/pesanan/detail', [DetailPesananController::class, 'getDetailPesanan']);
+    Route::put('/pesanandetail', [DetailPesananController::class, 'putDetailPesanandeskripsiservis']);
+    Route::get('/detailbayar/{id_pesanan}', [DetailPesananController::class, 'getdetailakhir']);
 
     Route::put('/ulasan/tukang/{id_tukang}', [CommentsTukangController::class, 'kasihulasanuser']);
     Route::post('/rating/tukang/{id_tukang}', [CommentsTukangController::class, 'kasihratinguser']);

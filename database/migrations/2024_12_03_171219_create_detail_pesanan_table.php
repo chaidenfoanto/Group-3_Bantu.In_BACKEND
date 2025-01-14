@@ -16,9 +16,8 @@ return new class extends Migration
             $table->string('id_pesanan');
             $table->string('nama_layanan');
             $table->decimal('harga_layanan', 10, 2);
-            $table->integer('kuantitas');
             $table->decimal('subtotal', 10, 2);
-            $table->text('deskripsi_servis');
+            $table->text('deskripsi_servis')->nullable();
             $table->timestamps();
 
             $table->foreign('id_pesanan')

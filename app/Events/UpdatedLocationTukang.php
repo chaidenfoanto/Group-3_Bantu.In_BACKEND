@@ -9,23 +9,27 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Event\ShouldBroadcastNow;
-use App\Models\LocationModel;
-use App\Models\User;
 use App\Models\TukangModel;
 
-class UpdatedLocationTukang 
+class UpdatedLocationTukang implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    private $user;
+    public $tukang;
 
     /**
      * Create a new event instance.
+     *
+     * @param TukangModel $tukang
+     * @return void
      */
     public function __construct(TukangModel $tukang)
     {
         $this->tukang = $tukang;
+        \Log::info('UpdatedLocationTukang event constructed', [
+            'tukang_id' => $tukang->id_tukang,
+            'location' => $tukang->tukang_location
+        ]);
     }
 
     /**
@@ -35,16 +39,25 @@ class UpdatedLocationTukang
      */
     public function broadcastOn(): array
     {
-        return [
-            new Channel('tukang.' . $this->tukang->id_tukang),
-        ];
+        $channel = new Channel('tukang.' . $this->tukang->id_tukang);
+        \Log::info('Broadcasting location update', [
+            'channel' => $channel->name,
+            'tukang_id' => $this->tukang->id_tukang
+        ]);
+        return [$channel];
     }
 
-    public function broadcastWith()
+    /**
+     * Get the data to broadcast.
+     *
+     * @return array
+     */
+    public function broadcastWith(): array
     {
-        // Menyertakan data lokasi tukang terbaru
         return [
+            'tukang_id' => $this->tukang->id_tukang,
             'tukang_location' => $this->tukang->tukang_location,
+            'updated_at' => now()->toISOString()
         ];
     }
 }
