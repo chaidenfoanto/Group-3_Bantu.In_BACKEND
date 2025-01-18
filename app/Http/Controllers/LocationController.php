@@ -7,6 +7,7 @@ use App\Models\LocationModel;
 use App\Models\TukangModel;
 use App\Models\User;
 use App\Events\UpdatedLocationTukang;
+use App\Events\ChangeTimeService;
 use App\Events\StartLocationTukang;
 use App\Events\EndLocationTukang;
 use Illuminate\Support\Facades\Validator;
@@ -46,7 +47,7 @@ class LocationController extends Controller
             'destination' => 'required|array',
             'destination.lat' => 'required|numeric',
             'destination.lng' => 'required|numeric',
-            'destination_name' => 'required|string',
+            'destination_name' => 'required|array',
         ]);
 
         // Jika validasi gagal
@@ -262,11 +263,10 @@ class LocationController extends Controller
         $tukangs = TukangModel::all();
 
         $tukangTerdekat = $tukangs->map(function ($tukang) use ($origin) {
-            // Pastikan decode JSON string ke array
             $tukangLocation = is_string($tukang->tukang_location) 
                 ? json_decode($tukang->tukang_location, true)
                 : $tukang->tukang_location;
-                    
+
             $tukang->distance = $this->calculateDistance($origin, $tukangLocation);
             return $tukang;
         });
@@ -282,72 +282,7 @@ class LocationController extends Controller
                 'status' => 'success',
                 'message' => 'Tukang terdekat berhasil ditemukan.',
                 'data' => $tukangTerdekat->map(function ($tukang) {
-                    return [
-                        'tukang_id' => $tukang->id_tukang,
-                        'name' => $tukang->name,
-                        'rating' => $tukang->rating,
-                        'tukang_location' => $tukang->tukang_location,
-                        'distance' => $tukang->distance,
-                    ];
-                }),
-            ], 200);
-        }
-
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Tidak ada tukang yang berada dalam jangkauan radius.',
-        ], 404);
-    }
-
-    public function getNearestTukangTarik(Request $request)
-    {
-        // Ambil user yang terautentikasi
-        $user = auth()->user();
-
-        if (!$user) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'User tidak terautentikasi.',
-            ], 401);
-        }
-
-        // Cari lokasi berdasarkan id_user
-        $locate = LocationModel::where('id_user', $user->id_user)->first();
-
-        if (!$locate) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Lokasi untuk user tidak ditemukan.',
-            ], 404);
-        }
-
-        $origin = json_decode($locate->origin, true);
-        $radius = 2;
-
-        $tukangs = TukangModel::all();
-
-        $tukangTerdekat = $tukangs->map(function ($tukang) use ($origin) {
-            // Pastikan decode JSON string ke array
-            $tukangLocation = is_string($tukang->tukang_location) 
-                ? json_decode($tukang->tukang_location, true)
-                : $tukang->tukang_location;
-                    
-            $tukang->distance = $this->calculateDistance($origin, $tukangLocation);
-            return $tukang;
-        });
-
-        $tukangTerdekat = $tukangTerdekat->filter(function ($tukang) use ($radius) {
-            return $tukang->distance <= $radius;
-        });
-
-        if ($tukangTerdekat->isNotEmpty()) {
-            $tukangTerdekat = $tukangTerdekat->sortBy('distance')->values();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Tukang terdekat berhasil ditemukan.',
-                'data' => $tukangTerdekat->map(function ($tukang) {
-                    return [
+                    $data = [
                         'tukang_id' => $tukang->id_tukang,
                         'name' => $tukang->name,
                         'rating' => $tukang->rating,
@@ -356,6 +291,8 @@ class LocationController extends Controller
                         'spesialisasi' => $tukang->spesialisasi,
                         'distance' => $tukang->distance,
                     ];
+
+                    return $data;
                 }),
             ], 200);
         }
@@ -365,6 +302,328 @@ class LocationController extends Controller
             'message' => 'Tidak ada tukang yang berada dalam jangkauan radius.',
         ], 404);
     }
+
+
+    // public function getNearestTukang(Request $request)
+    // {
+    //     // Ambil user yang terautentikasi
+    //     $user = auth()->user();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'User tidak terautentikasi.',
+    //         ], 401);
+    //     }
+
+    //     // Cari lokasi berdasarkan id_user
+    //     $locate = LocationModel::where('id_user', $user->id_user)->first();
+
+    //     if (!$locate) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Lokasi untuk user tidak ditemukan.',
+    //         ], 404);
+    //     }
+
+    //     $origin = json_decode($locate->origin, true);
+    //     $radius = 2;
+
+    //     $tukangs = TukangModel::all();
+
+    //     $tukangTerdekat = $tukangs->map(function ($tukang) use ($origin) {
+    //         // Pastikan decode JSON string ke array
+    //         $tukangLocation = is_string($tukang->tukang_location) 
+    //             ? json_decode($tukang->tukang_location, true)
+    //             : $tukang->tukang_location;
+                    
+    //         $tukang->distance = $this->calculateDistance($origin, $tukangLocation);
+    //         return $tukang;
+    //     });
+
+    //     $tukangTerdekat = $tukangTerdekat->filter(function ($tukang) use ($radius) {
+    //         return $tukang->distance <= $radius;
+    //     });
+
+    //     if ($tukangTerdekat->isNotEmpty()) {
+    //         $tukangTerdekat = $tukangTerdekat->sortBy('distance')->values();
+
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'message' => 'Tukang terdekat berhasil ditemukan.',
+    //             'data' => $tukangTerdekat->map(function ($tukang) {
+    //                 return [
+    //                     'tukang_id' => $tukang->id_tukang,
+    //                     'name' => $tukang->name,
+    //                     'rating' => $tukang->rating,
+    //                     'tukang_location' => $tukang->tukang_location,
+    //                     'distance' => $tukang->distance,
+    //                 ];
+    //             }),
+    //         ], 200);
+    //     }
+
+    //     return response()->json([
+    //         'status' => 'error',
+    //         'message' => 'Tidak ada tukang yang berada dalam jangkauan radius.',
+    //     ], 404);
+    // }
+
+    // public function getNearestTukangTarik(Request $request)
+    // {
+    //     // Ambil user yang terautentikasi
+    //     $user = auth()->user();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'User tidak terautentikasi.',
+    //         ], 401);
+    //     }
+
+    //     // Cari lokasi berdasarkan id_user
+    //     $locate = LocationModel::where('id_user', $user->id_user)->first();
+
+    //     if (!$locate) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Lokasi untuk user tidak ditemukan.',
+    //         ], 404);
+    //     }
+
+    //     $origin = json_decode($locate->origin, true);
+    //     $radius = 2;
+
+    //     $tukangs = TukangModel::all();
+
+    //     $tukangTerdekat = $tukangs->map(function ($tukang) use ($origin) {
+    //         // Pastikan decode JSON string ke array
+    //         $tukangLocation = is_string($tukang->tukang_location) 
+    //             ? json_decode($tukang->tukang_location, true)
+    //             : $tukang->tukang_location;
+                    
+    //         $tukang->distance = $this->calculateDistance($origin, $tukangLocation);
+    //         return $tukang;
+    //     });
+
+    //     $tukangTerdekat = $tukangTerdekat->filter(function ($tukang) use ($radius) {
+    //         return $tukang->distance <= $radius;
+    //     });
+
+    //     if ($tukangTerdekat->isNotEmpty()) {
+    //         $tukangTerdekat = $tukangTerdekat->sortBy('distance')->values();
+
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'message' => 'Tukang terdekat berhasil ditemukan.',
+    //             'data' => $tukangTerdekat->map(function ($tukang) {
+    //                 return [
+    //                     'tukang_id' => $tukang->id_tukang,
+    //                     'name' => $tukang->name,
+    //                     'rating' => $tukang->rating,
+    //                     'tukang_location' => $tukang->tukang_location,
+    //                     'foto_diri' => $tukang->foto_diri,
+    //                     'spesialisasi' => $tukang->spesialisasi,
+    //                     'distance' => $tukang->distance,
+    //                 ];
+    //             }),
+    //         ], 200);
+    //     }
+
+    //     return response()->json([
+    //         'status' => 'error',
+    //         'message' => 'Tidak ada tukang yang berada dalam jangkauan radius.',
+    //     ], 404);
+    // }
+
+    private function calculateHaversineDistance($origin, $tukangLocation)
+    {
+        try {
+            // Log input values
+            \Log::info('Input values:', [
+                'origin' => $origin,
+                'origin_type' => gettype($origin),
+                'tukangLocation' => $tukangLocation,
+                'tukang_type' => gettype($tukangLocation)
+            ]);
+
+            // If origin is a string, try to decode it
+            if (is_string($origin)) {
+                $origin = json_decode($origin, true);
+            } elseif (!is_array($origin)) {
+                throw new \InvalidArgumentException('Invalid origin format. Expected JSON string or array.');
+            }
+
+            // If tukangLocation is a string, try to decode it
+            if (is_string($tukangLocation)) {
+                $tukangLocation = json_decode($tukangLocation, true);
+            } elseif (!is_array($tukangLocation)) {
+                throw new \InvalidArgumentException('Invalid tukangLocation format. Expected JSON string or array.');
+            }
+
+            // Validate coordinates exist
+            if (!isset($origin['lat'], $origin['lng'], $tukangLocation['lat'], $tukangLocation['lng'])) {
+                \Log::error('Invalid coordinates format', [
+                    'origin' => $origin,
+                    'tukangLocation' => $tukangLocation
+                ]);
+                return PHP_FLOAT_MAX;
+            }
+
+            $lat1 = (float)$origin['lat'];
+            $lng1 = (float)$origin['lng'];
+            $lat2 = (float)$tukangLocation['lat'];
+            $lng2 = (float)$tukangLocation['lng'];
+
+            $earthRadius = 6371;
+
+            $latDifferenceRad = deg2rad($lat2 - $lat1);
+            $lngDifferenceRad = deg2rad($lng2 - $lng1);
+
+            $lat1Rad = deg2rad($lat1);
+            $lat2Rad = deg2rad($lat2);
+
+            $a = sin($latDifferenceRad / 2) * sin($latDifferenceRad / 2) +
+                cos($lat1Rad) * cos($lat2Rad) *
+                sin($lngDifferenceRad / 2) * sin($lngDifferenceRad / 2);
+
+            $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+            $distance = $earthRadius * $c;
+
+            \Log::info('Distance calculated:', ['distance' => $distance]);
+
+            return $distance;
+
+        } catch (\Exception $e) {
+            \Log::error('Error in calculateHaversineDistance:', [
+                'error' => $e->getMessage(),
+                'origin' => $origin,
+                'tukangLocation' => $tukangLocation
+            ]);
+            return PHP_FLOAT_MAX;
+        }
+    }
+
+
+    public function updateWaktuServis(Request $request)
+    {
+        $tukang = auth()->user();
+
+        if (!$tukang || !$tukang->id_tukang) {
+            return response()->json([
+                'status' => 'error',
+                'message' => !$tukang ? 'User tidak terautentikasi.' : 'Hanya tukang yang dapat mengubah waktu servis.',
+            ], !$tukang ? 401 : 403);
+        }
+
+        $tukangLocation = $tukang->tukang_location;
+        if (is_string($tukangLocation)) {
+            $tukangLocation = json_decode($tukangLocation, true);
+        } elseif (!is_array($tukangLocation)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Format lokasi tukang tidak valid.',
+            ], 400);
+        }
+
+        if (!isset($tukangLocation['lat'], $tukangLocation['lng'])) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Format lokasi tukang tidak valid.',
+            ], 400);
+        }
+
+        // Mengambil daftar pesanan dengan join tabel tukang dan location
+        $pesananList = collect(DB::table('pesanan')
+            ->join('location', 'pesanan.id_user', '=', 'location.id_user')
+            ->join('tukang', 'pesanan.id_tukang', '=', 'tukang.id_tukang')  // Menambahkan join untuk tabel tukang
+            ->where('pesanan.id_tukang', $tukang->id_tukang)
+            ->whereNull('pesanan.waktu_servis')
+            ->select('pesanan.id_pesanan', 'location.destination', 'tukang.tukang_location') // Menambahkan tukang_location
+            ->get());
+
+        // Memeriksa apakah koleksi kosong
+        if ($pesananList->isEmpty()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Tidak ada pesanan yang dapat diubah waktu servisnya.',
+            ], 404);
+        }
+
+        $updatedCount = 0;
+
+        foreach ($pesananList as $pesanan) {
+            $destinationLocation = $pesanan->destination;
+            $tukangLocation = $pesanan->tukang_location;
+        
+            // Langkah 1: Dekode dua kali jika perlu
+            if (is_string($destinationLocation)) {
+                // Dekode pertama untuk menghapus escape karakter
+                $destinationLocation = json_decode($destinationLocation, true);
+                // Cek apakah hasilnya masih berupa string JSON
+                if (is_string($destinationLocation)) {
+                    // Dekode kedua jika masih dalam format string JSON
+                    $destinationLocation = json_decode($destinationLocation, true);
+                }
+            }
+        
+            // Pastikan destinationLocation adalah array dengan lat dan lng
+            if (!is_array($destinationLocation) || !isset($destinationLocation['lat'], $destinationLocation['lng'])) {
+                \Log::warning('Invalid destination format or missing coordinates for pesanan ID: ' . $pesanan->id_pesanan);
+                continue;
+            }
+        
+            // Dekode tukang_location jika perlu
+            if (is_string($tukangLocation)) {
+                $tukangLocation = json_decode($tukangLocation, true);
+            }
+        
+            // Pastikan tukangLocation adalah array dengan lat dan lng
+            if (!is_array($tukangLocation) || !isset($tukangLocation['lat'], $tukangLocation['lng'])) {
+                \Log::warning('Invalid tukang location format for pesanan ID: ' . $pesanan->id_pesanan);
+                continue;
+            }
+        
+            // Hitung jarak
+            $distance = $this->calculateHaversineDistance($destinationLocation, $tukangLocation);
+
+            \Log::info('Jarak antara tukang dan tujuan: ' . $distance . ' km');
+        
+            // Cek apakah jarak dalam radius 100 meter (0.1 km)
+            if ($distance <= 0.1) {
+                try {
+                    DB::table('pesanan')
+                        ->where('id_pesanan', $pesanan->id_pesanan)
+                        ->update([
+                            'waktu_servis' => now(),
+                            'updated_at' => now(),
+                        ]);
+        
+                    ChangeTimeService::dispatch($pesanan);
+                    $updatedCount++;
+                } catch (\Exception $e) {
+                    \Log::error('Failed to update waktu_servis:', [
+                        'error' => $e->getMessage(),
+                        'id_pesanan' => $pesanan->id_pesanan,
+                    ]);
+                }
+            }
+        }           
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Waktu servis diperbarui untuk ' . $updatedCount . ' pesanan dalam radius layanan.',
+            'updated_count' => $updatedCount,
+            'pesanan_list' => $pesananList,  // Menampilkan data pesanan beserta lokasi tukang dan tujuan
+        ]);
+    }
+
+
+    
+
+
+
+
 
     // public function getRandomTukang(Request $request)
     // {
@@ -433,14 +692,21 @@ class LocationController extends Controller
 
     public function postTukangToPesanan(Request $request)
     {
-        // Validasi input
-        $validator = Validator::make($request->all(), [
+        // Validasi input dengan kondisional untuk id_tukang
+        $validationRules = [
             'jenis_servis' => 'required|array',
             'jenis_servis.*.jenis' => 'required|string|exists:biaya,jenis_servis',
             'jenis_servis.*.kuantitas' => 'required|integer|min:1',
             'alamat_servis' => 'required|string',
             'metode_pembayaran' => 'required|in:Cash,Non-tunai'
-        ]);
+        ];
+
+        // Tambahkan validasi id_tukang jika ada
+        if ($request->has('id_tukang')) {
+            $validationRules['id_tukang'] = 'required|exists:tukang,id_tukang';
+        }
+
+        $validator = Validator::make($request->all(), $validationRules);
 
         if ($validator->fails()) {
             return response()->json([
@@ -467,188 +733,57 @@ class LocationController extends Controller
             ], 404);
         }
 
-        // Logic untuk mencari tukang terdekat
+        // Logic untuk mencari tukang
         $origin = json_decode($locate->origin, true);
         $radius = 10;
-        $tukangs = TukangModel::all();
-        
-        $tukangTerdekat = $tukangs->map(function ($tukang) use ($origin) {
-            $tukangLocation = is_string($tukang->tukang_location)
-                ? json_decode($tukang->tukang_location, true)
-                : $tukang->tukang_location;
-            $tukang->distance = $this->calculateDistance($origin, $tukangLocation);
-            return $tukang;
-        })->filter(function ($tukang) use ($radius) {
-            return $tukang->distance <= $radius;
-        })->values();
 
-        if ($tukangTerdekat->isEmpty()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Tidak ada tukang yang berada dalam jangkauan radius.',
-            ], 404);
-        }
-
-        $randomTukang = $tukangTerdekat->random();
-        
-        // Hitung total biaya dan siapkan detail pesanan
-        $totalBiaya = 0;
-        $biayaAdmin = 1000;
-        $detailPesananData = [];
-        $latestBiaya = null;
-        
-        foreach ($request->jenis_servis as $servis) {
-            $biaya = DB::table('biaya')
-                ->where('jenis_servis', $servis['jenis'])
-                ->first();
-
-            if (!$biaya) {
+        if ($request->has('id_tukang')) {
+            // Jika id_tukang disediakan, gunakan tukang tersebut
+            $selectedTukang = TukangModel::find($request->id_tukang);
+            
+            if (!$selectedTukang) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Biaya untuk layanan "' . $servis['jenis'] . '" tidak ditemukan.',
+                    'message' => 'Tukang tidak ditemukan.',
                 ], 404);
             }
 
-            $subtotal = $biaya->biaya_servis * $servis['kuantitas'];
-            $totalBiaya += $subtotal;
-            $biayaAdmin = $biaya->biaya_admin; // Biaya admin hanya sekali
-            $latestBiaya = $biaya; // Simpan biaya terakhir untuk referensi id_biaya
-
-            $detailPesananData[] = [
-                'nama_layanan' => $servis['jenis'],
-                'harga_layanan' => $biaya->biaya_servis,
-                'subtotal' => $subtotal,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }
-
-        $totalBiaya += $biayaAdmin; // Tambahkan biaya admin sekali di akhir
-
-        // Buat data pesanan utama
-        $idPesanan = Str::uuid()->toString();
-        $pesananData = [
-            'id_pesanan' => $idPesanan,
-            'id_user' => $user->id_user,
-            'id_tukang' => $randomTukang->id_tukang,
-            'id_biaya' => $latestBiaya->id_biaya,
-            'waktu_pesan' => now(),
-            'waktu_servis' => now()->addMinutes(30),
-            'alamat_servis' => $request->alamat_servis,
-            'metode_pembayaran' => $request->metode_pembayaran,
-            'kuantitas' => collect($request->jenis_servis)->sum('kuantitas'),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ];
-
-        try {
-            DB::beginTransaction();
+            $tukangLocation = is_string($selectedTukang->tukang_location)
+                ? json_decode($selectedTukang->tukang_location, true)
+                : $selectedTukang->tukang_location;
             
-            // Simpan pesanan utama
-            DB::table('pesanan')->insert($pesananData);
-
-            // Simpan detail pesanan
-            foreach ($detailPesananData as $detail) {
-                DB::table('detail_pesanan')->insert([
-                    'id_pesanan' => $idPesanan,
-                    'nama_layanan' => $detail['nama_layanan'],
-                    'harga_layanan' => $detail['harga_layanan'],
-                    'subtotal' => $detail['subtotal'],
-                    'created_at' => $detail['created_at'],
-                    'updated_at' => $detail['updated_at'],
-                ]);
+            $distance = $this->calculateDistance($origin, $tukangLocation);
+            
+            if ($distance > $radius) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Tukang berada di luar jangkauan radius ' . $radius . ' km.',
+                ], 400);
             }
 
-            DB::commit();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Pesanan berhasil dibuat.',
-                'data' => [
-                    'pesanan' => $pesananData,
-                    'detail_pesanan' => $detailPesananData,
-                    'total_biaya' => $totalBiaya,
-                    'biaya_admin' => $biayaAdmin,
-                    'tukang' => [
-                        'id_tukang' => $randomTukang->id_tukang,
-                        'distance' => round($randomTukang->distance, 2) . ' km'
-                    ]
-                ]
-            ], 201);
-
-        } catch (\Exception $e) {
-            DB::rollback();
+            $selectedTukang->distance = $distance;
+        } else {
+            // Jika tidak ada id_tukang, cari tukang terdekat secara random
+            $tukangs = TukangModel::all();
             
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Terjadi kesalahan saat membuat pesanan.',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
+            $tukangTerdekat = $tukangs->map(function ($tukang) use ($origin) {
+                $tukangLocation = is_string($tukang->tukang_location)
+                    ? json_decode($tukang->tukang_location, true)
+                    : $tukang->tukang_location;
+                $tukang->distance = $this->calculateDistance($origin, $tukangLocation);
+                return $tukang;
+            })->filter(function ($tukang) use ($radius) {
+                return $tukang->distance <= $radius;
+            })->values();
 
+            if ($tukangTerdekat->isEmpty()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Tidak ada tukang yang berada dalam jangkauan radius.',
+                ], 404);
+            }
 
-
-    public function postTukangToPesananambil(Request $request)
-    {
-        // Validasi input
-        $validator = Validator::make($request->all(), [
-            'jenis_servis' => 'required|array',
-            'jenis_servis.*.jenis' => 'required|string|exists:biaya,jenis_servis',
-            'jenis_servis.*.kuantitas' => 'required|integer|min:1',
-            'alamat_servis' => 'required|string',
-            'metode_pembayaran' => 'required|in:Cash,Non-tunai',
-            'id_tukang' => 'required|exists:tukang,id_tukang'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => $validator->errors(),
-            ], 400);
-        }
-
-        // Ambil user yang terautentikasi
-        $user = auth()->user();
-        if (!$user) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'User tidak terautentikasi.',
-            ], 401);
-        }
-
-        // Cari lokasi berdasarkan id_user
-        $locate = LocationModel::where('id_user', $user->id_user)->first();
-        if (!$locate) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Lokasi untuk user tidak ditemukan.',
-            ], 404);
-        }
-
-        // Cek tukang dan jarak
-        $origin = json_decode($locate->origin, true);
-        $radius = 10;
-        $selectedTukang = TukangModel::find($request->id_tukang);
-        
-        if (!$selectedTukang) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Tukang tidak ditemukan.',
-            ], 404);
-        }
-
-        $tukangLocation = is_string($selectedTukang->tukang_location)
-            ? json_decode($selectedTukang->tukang_location, true)
-            : $selectedTukang->tukang_location;
-        
-        $distance = $this->calculateDistance($origin, $tukangLocation);
-        
-        if ($distance > $radius) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Tukang berada di luar jangkauan radius ' . $radius . ' km.',
-            ], 400);
+            $selectedTukang = $tukangTerdekat->random();
         }
 
         // Hitung total biaya dan siapkan detail pesanan
@@ -693,7 +828,6 @@ class LocationController extends Controller
             'id_tukang' => $selectedTukang->id_tukang,
             'id_biaya' => $latestBiaya->id_biaya,
             'waktu_pesan' => now(),
-            'waktu_servis' => now()->addMinutes(30),
             'alamat_servis' => $request->alamat_servis,
             'metode_pembayaran' => $request->metode_pembayaran,
             'kuantitas' => collect($request->jenis_servis)->sum('kuantitas'),
@@ -731,7 +865,7 @@ class LocationController extends Controller
                     'biaya_admin' => $biayaAdmin,
                     'tukang' => [
                         'id_tukang' => $selectedTukang->id_tukang,
-                        'distance' => round($distance, 2) . ' km'
+                        'distance' => round($selectedTukang->distance, 2) . ' km'
                     ]
                 ]
             ], 201);
@@ -745,6 +879,319 @@ class LocationController extends Controller
             ], 500);
         }
     }
+
+    // public function postTukangToPesanan(Request $request)
+    // {
+    //     // Validasi input
+    //     $validator = Validator::make($request->all(), [
+    //         'jenis_servis' => 'required|array',
+    //         'jenis_servis.*.jenis' => 'required|string|exists:biaya,jenis_servis',
+    //         'jenis_servis.*.kuantitas' => 'required|integer|min:1',
+    //         'alamat_servis' => 'required|string',
+    //         'metode_pembayaran' => 'required|in:Cash,Non-tunai'
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => $validator->errors(),
+    //         ], 400);
+    //     }
+
+    //     // Ambil user yang terautentikasi
+    //     $user = auth()->user();
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'User tidak terautentikasi.',
+    //         ], 401);
+    //     }
+
+    //     // Cari lokasi berdasarkan id_user
+    //     $locate = LocationModel::where('id_user', $user->id_user)->first();
+    //     if (!$locate) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Lokasi untuk user tidak ditemukan.',
+    //         ], 404);
+    //     }
+
+    //     // Logic untuk mencari tukang terdekat
+    //     $origin = json_decode($locate->origin, true);
+    //     $radius = 10;
+    //     $tukangs = TukangModel::all();
+        
+    //     $tukangTerdekat = $tukangs->map(function ($tukang) use ($origin) {
+    //         $tukangLocation = is_string($tukang->tukang_location)
+    //             ? json_decode($tukang->tukang_location, true)
+    //             : $tukang->tukang_location;
+    //         $tukang->distance = $this->calculateDistance($origin, $tukangLocation);
+    //         return $tukang;
+    //     })->filter(function ($tukang) use ($radius) {
+    //         return $tukang->distance <= $radius;
+    //     })->values();
+
+    //     if ($tukangTerdekat->isEmpty()) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Tidak ada tukang yang berada dalam jangkauan radius.',
+    //         ], 404);
+    //     }
+
+    //     $randomTukang = $tukangTerdekat->random();
+        
+    //     // Hitung total biaya dan siapkan detail pesanan
+    //     $totalBiaya = 0;
+    //     $biayaAdmin = 1000;
+    //     $detailPesananData = [];
+    //     $latestBiaya = null;
+        
+    //     foreach ($request->jenis_servis as $servis) {
+    //         $biaya = DB::table('biaya')
+    //             ->where('jenis_servis', $servis['jenis'])
+    //             ->first();
+
+    //         if (!$biaya) {
+    //             return response()->json([
+    //                 'status' => 'error',
+    //                 'message' => 'Biaya untuk layanan "' . $servis['jenis'] . '" tidak ditemukan.',
+    //             ], 404);
+    //         }
+
+    //         $subtotal = $biaya->biaya_servis * $servis['kuantitas'];
+    //         $totalBiaya += $subtotal;
+    //         $biayaAdmin = $biaya->biaya_admin; // Biaya admin hanya sekali
+    //         $latestBiaya = $biaya; // Simpan biaya terakhir untuk referensi id_biaya
+
+    //         $detailPesananData[] = [
+    //             'nama_layanan' => $servis['jenis'],
+    //             'harga_layanan' => $biaya->biaya_servis,
+    //             'subtotal' => $subtotal,
+    //             'created_at' => now(),
+    //             'updated_at' => now(),
+    //         ];
+    //     }
+
+    //     $totalBiaya += $biayaAdmin; // Tambahkan biaya admin sekali di akhir
+
+    //     // Buat data pesanan utama
+    //     $idPesanan = Str::uuid()->toString();
+    //     $pesananData = [
+    //         'id_pesanan' => $idPesanan,
+    //         'id_user' => $user->id_user,
+    //         'id_tukang' => $randomTukang->id_tukang,
+    //         'id_biaya' => $latestBiaya->id_biaya,
+    //         'waktu_pesan' => now(),
+    //         'alamat_servis' => $request->alamat_servis,
+    //         'metode_pembayaran' => $request->metode_pembayaran,
+    //         'kuantitas' => collect($request->jenis_servis)->sum('kuantitas'),
+    //         'created_at' => now(),
+    //         'updated_at' => now(),
+    //     ];
+
+    //     try {
+    //         DB::beginTransaction();
+            
+    //         // Simpan pesanan utama
+    //         DB::table('pesanan')->insert($pesananData);
+
+    //         // Simpan detail pesanan
+    //         foreach ($detailPesananData as $detail) {
+    //             DB::table('detail_pesanan')->insert([
+    //                 'id_pesanan' => $idPesanan,
+    //                 'nama_layanan' => $detail['nama_layanan'],
+    //                 'harga_layanan' => $detail['harga_layanan'],
+    //                 'subtotal' => $detail['subtotal'],
+    //                 'created_at' => $detail['created_at'],
+    //                 'updated_at' => $detail['updated_at'],
+    //             ]);
+    //         }
+
+    //         DB::commit();
+
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'message' => 'Pesanan berhasil dibuat.',
+    //             'data' => [
+    //                 'pesanan' => $pesananData,
+    //                 'detail_pesanan' => $detailPesananData,
+    //                 'total_biaya' => $totalBiaya,
+    //                 'biaya_admin' => $biayaAdmin,
+    //                 'tukang' => [
+    //                     'id_tukang' => $randomTukang->id_tukang,
+    //                     'distance' => round($randomTukang->distance, 2) . ' km'
+    //                 ]
+    //             ]
+    //         ], 201);
+
+    //     } catch (\Exception $e) {
+    //         DB::rollback();
+            
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Terjadi kesalahan saat membuat pesanan.',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+
+
+    // public function postTukangToPesananambil(Request $request)
+    // {
+    //     // Validasi input
+    //     $validator = Validator::make($request->all(), [
+    //         'jenis_servis' => 'required|array',
+    //         'jenis_servis.*.jenis' => 'required|string|exists:biaya,jenis_servis',
+    //         'jenis_servis.*.kuantitas' => 'required|integer|min:1',
+    //         'alamat_servis' => 'required|string',
+    //         'metode_pembayaran' => 'required|in:Cash,Non-tunai',
+    //         'id_tukang' => 'required|exists:tukang,id_tukang'
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => $validator->errors(),
+    //         ], 400);
+    //     }
+
+    //     // Ambil user yang terautentikasi
+    //     $user = auth()->user();
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'User tidak terautentikasi.',
+    //         ], 401);
+    //     }
+
+    //     // Cari lokasi berdasarkan id_user
+    //     $locate = LocationModel::where('id_user', $user->id_user)->first();
+    //     if (!$locate) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Lokasi untuk user tidak ditemukan.',
+    //         ], 404);
+    //     }
+
+    //     // Cek tukang dan jarak
+    //     $origin = json_decode($locate->origin, true);
+    //     $radius = 10;
+    //     $selectedTukang = TukangModel::find($request->id_tukang);
+        
+    //     if (!$selectedTukang) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Tukang tidak ditemukan.',
+    //         ], 404);
+    //     }
+
+    //     $tukangLocation = is_string($selectedTukang->tukang_location)
+    //         ? json_decode($selectedTukang->tukang_location, true)
+    //         : $selectedTukang->tukang_location;
+        
+    //     $distance = $this->calculateDistance($origin, $tukangLocation);
+        
+    //     if ($distance > $radius) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Tukang berada di luar jangkauan radius ' . $radius . ' km.',
+    //         ], 400);
+    //     }
+
+    //     // Hitung total biaya dan siapkan detail pesanan
+    //     $totalBiaya = 0;
+    //     $biayaAdmin = 1000;
+    //     $detailPesananData = [];
+    //     $latestBiaya = null;
+
+    //     foreach ($request->jenis_servis as $servis) {
+    //         $biaya = DB::table('biaya')
+    //             ->where('jenis_servis', $servis['jenis'])
+    //             ->first();
+
+    //         if (!$biaya) {
+    //             return response()->json([
+    //                 'status' => 'error',
+    //                 'message' => 'Biaya untuk layanan "' . $servis['jenis'] . '" tidak ditemukan.',
+    //             ], 404);
+    //         }
+
+    //         $subtotal = $biaya->biaya_servis * $servis['kuantitas'];
+    //         $totalBiaya += $subtotal;
+    //         $biayaAdmin = $biaya->biaya_admin;
+    //         $latestBiaya = $biaya;
+
+    //         $detailPesananData[] = [
+    //             'nama_layanan' => $servis['jenis'],
+    //             'harga_layanan' => $biaya->biaya_servis,
+    //             'subtotal' => $subtotal,
+    //             'created_at' => now(),
+    //             'updated_at' => now(),
+    //         ];
+    //     }
+
+    //     $totalBiaya += $biayaAdmin;
+
+    //     // Buat data pesanan utama
+    //     $idPesanan = Str::uuid()->toString();
+    //     $pesananData = [
+    //         'id_pesanan' => $idPesanan,
+    //         'id_user' => $user->id_user,
+    //         'id_tukang' => $selectedTukang->id_tukang,
+    //         'id_biaya' => $latestBiaya->id_biaya,
+    //         'waktu_pesan' => now(),
+    //         'alamat_servis' => $request->alamat_servis,
+    //         'metode_pembayaran' => $request->metode_pembayaran,
+    //         'kuantitas' => collect($request->jenis_servis)->sum('kuantitas'),
+    //         'created_at' => now(),
+    //         'updated_at' => now(),
+    //     ];
+
+    //     try {
+    //         DB::beginTransaction();
+            
+    //         // Simpan pesanan utama
+    //         DB::table('pesanan')->insert($pesananData);
+            
+    //         // Simpan detail pesanan
+    //         foreach ($detailPesananData as $detail) {
+    //             DB::table('detail_pesanan')->insert([
+    //                 'id_pesanan' => $idPesanan,
+    //                 'nama_layanan' => $detail['nama_layanan'],
+    //                 'harga_layanan' => $detail['harga_layanan'],
+    //                 'subtotal' => $detail['subtotal'],
+    //                 'created_at' => $detail['created_at'],
+    //                 'updated_at' => $detail['updated_at'],
+    //             ]);
+    //         }
+
+    //         DB::commit();
+
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'message' => 'Pesanan berhasil dibuat.',
+    //             'data' => [
+    //                 'pesanan' => $pesananData,
+    //                 'detail_pesanan' => $detailPesananData,
+    //                 'total_biaya' => $totalBiaya,
+    //                 'biaya_admin' => $biayaAdmin,
+    //                 'tukang' => [
+    //                     'id_tukang' => $selectedTukang->id_tukang,
+    //                     'distance' => round($distance, 2) . ' km'
+    //                 ]
+    //             ]
+    //         ], 201);
+
+    //     } catch (\Exception $e) {
+    //         DB::rollback();
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Terjadi kesalahan saat membuat pesanan.',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
     // public function getNearestTukang(Request $request, $id_user)
     // {

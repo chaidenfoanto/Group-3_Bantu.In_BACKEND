@@ -17,10 +17,13 @@ return new class extends Migration
             $table->string('id_tukang', 20);
             $table->unsignedInteger('id_biaya');
             $table->datetime('waktu_pesan'); 
-            $table->datetime('waktu_servis');
+            $table->datetime('waktu_servis')->nullable();
             $table->text('alamat_servis');
             $table->enum('metode_pembayaran', ['Cash', 'Non-tunai'])->default('Cash');
             $table->integer('kuantitas')->default(1);
+            $table->datetime('waktu_req_by_user')->nullable();
+            $table->text('description_problem')->nullable();
+            $table->binary('photo_problem_issue')->nullable();
             $table->timestamps();
 
             $table->foreign('id_user')

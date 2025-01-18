@@ -34,6 +34,13 @@ class DetailPesananController extends Controller
                 'message' => 'User tidak terautentikasi.',
             ], 401);
         }
+
+        if (!$user->id_user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User harus terdaftar sebagai user.',
+            ], 403);
+        }
     
         $detil = DetailPesananModel::where('id_pesanan', $idDetail)->get();
     
@@ -110,12 +117,24 @@ class DetailPesananController extends Controller
     
         // Update deskripsi_servis pada detail pesanan yang terkait dengan id_pesanan
         try {
+            DB::beginTransaction();
+
             DB::table('detail_pesanan')
                 ->where('id_pesanan', $idPesanan)
                 ->update([
                     'deskripsi_servis' => $deskripsiServis,
                     'updated_at' => now(),
-                ]);
+            ]);
+
+            DB::table('history')->insert([
+                'id_pesanan' => $idPesanan,
+                'status' => 'On_Progress',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        
+                // Commit transaksi jika semua operasi berhasil
+            DB::commit();
     
             return response()->json([
                 'status' => 'success',
@@ -123,6 +142,8 @@ class DetailPesananController extends Controller
             ], 200);
     
         } catch (\Exception $e) {
+            DB::rollback();
+
             return response()->json([
                 'status' => 'error',
                 'message' => 'Terjadi kesalahan saat memperbarui deskripsi servis.',
@@ -219,5 +240,4 @@ class DetailPesananController extends Controller
             ],
         ], 200);
     }
-    
 }

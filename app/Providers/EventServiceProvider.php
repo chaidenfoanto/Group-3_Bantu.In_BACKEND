@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Events\UpdatedLocationTukang;
+use App\Events\ChangeTimeService;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -11,6 +12,9 @@ class EventServiceProvider extends ServiceProvider
         UpdatedLocationTukang::class => [
             // Add any listeners here if needed
         ],
+        ChangeTimeService::class => [
+
+        ]
     ];
 
     public function boot(): void
