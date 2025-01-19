@@ -8,6 +8,8 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\CommentsUserController;
 use App\Http\Controllers\CommentsTukangController;
 use App\Http\Controllers\DetailPesananController;
+use App\Http\Controllers\TukangUpdateHistory;
+use App\Http\Controllers\PesananChooseController;
 
 //user
 Route::post('/regists', [RegisController::class, 'registersUser']); // bisa
@@ -44,8 +46,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::get('/lokasitukangterdekat/{id_user}', [LocationController::class, 'getNearestTukang']);
 
     Route::post('/pesan/tukang', [LocationController::class, 'postTukangToPesanan']);
+    Route::post('/bookingharitertentu/tukang', [PesananChooseController::class, 'ChooseDate']);
     // Route::post('/pesanantukangambil', [LocationController::class, 'postTukangToPesananambil']);
-    Route::put('/waktuserviceupdate', [LocationController::class, 'updateWaktuServis']);
+
 
     Route::get('/pesanan/detail', [DetailPesananController::class, 'getDetailPesanan']);
     Route::put('/pesanandetail', [DetailPesananController::class, 'putDetailPesanandeskripsiservis']);
@@ -75,4 +78,9 @@ Route::middleware('auth:tukang')->group(function () {
     Route::put('/ulasan/user/{id_user}', [CommentsUserController::class, 'kasihulasanuser']);
     Route::post('/rating/user/{id_user}', [CommentsUserController::class, 'kasihratinguser']);
     Route::get('/lihatratingxulasan/{id_user}', [CommentsUserController::class, 'getKomentarUser']);
+
+    Route::put('/putstatus', [TukangUpdateHistory::class, 'tukangput']);
+    Route::get('/getpesanandariuser', [TukangUpdateHistory::class, 'tukangtampilkanpesanan']);
+
+    Route::put('/waktuserviceupdate', [LocationController::class, 'updateWaktuServis']);
 });

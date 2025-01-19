@@ -3,6 +3,16 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\LocationModel;
+use App\Models\TukangModel;
+use App\Models\PesananModel;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class PesananChooseController extends Controller
 {
@@ -38,7 +48,7 @@ class PesananChooseController extends Controller
             $validationRules['id_tukang'] = 'required|exists:tukang,id_tukang';
         }
 
-        $validator = Validator::make($request->all(), $validationRules);
+        $validator = Validator::make($request->all(), $validatorRules);
 
         if ($validator->fails()) {
             return response()->json([
@@ -151,12 +161,14 @@ class PesananChooseController extends Controller
             'alamat_servis' => $request->alamat_servis,
             'metode_pembayaran' => $request->metode_pembayaran,
             'kuantitas' => collect($request->jenis_servis)->sum('kuantitas'),
-            'waktu_req_by_user' => $request->waktu_req_by_user,
+            'waktu_req_by_user' => Carbon::parse($request->waktu_req_by_user)->format('Y-m-d H:i:s'),
             'description_problem' => $request->description_problem,
-            'photo_problem_issue' => $request->file('photo_problem_issue')->store('public/pesanan'),
+            'photo_problem_issue' => $request->hasFile('photo_problem_issue') 
+                ? $request->file('photo_problem_issue')->store('public/pesanan') 
+                : null,
             'created_at' => now(),
             'updated_at' => now(),
-        ];
+        ];        
 
         try {
             DB::beginTransaction();
@@ -201,5 +213,28 @@ class PesananChooseController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    private function calculateDistance($origin, $tukangLocation)
+    {
+        $lat1 = $origin['lat'];
+        $lng1 = $origin['lng'];
+        $lat2 = $tukangLocation['lat'];
+        $lng2 = $tukangLocation['lng'];
+
+        $earthRadius = 6371; // Radius bumi dalam kilometer
+
+        // Menghitung jarak dalam derajat
+        $latDifference = deg2rad($lat2 - $lat1);
+        $lngDifference = deg2rad($lng2 - $lng1);
+
+        // Menghitung jarak menggunakan Haversine formula
+        $a = sin($latDifference / 2) * sin($latDifference / 2) +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($lngDifference / 2) * sin($lngDifference / 2);
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        $distance = $earthRadius * $c; // Jarak dalam kilometer
+
+        return $distance;
     }
 }

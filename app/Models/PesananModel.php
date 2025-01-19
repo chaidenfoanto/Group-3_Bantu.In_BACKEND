@@ -91,6 +91,6 @@ class PesananModel extends Model
     }
 
     public function history() {
-        return $this->hasMany(HistoryModel::class, 'id_pesanan', 'id_pesanan');
+        return $this->belongsTo(HistoryModel::class, 'id_pesanan', 'id_pesanan');
     }
 }

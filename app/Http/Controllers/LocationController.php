@@ -47,7 +47,7 @@ class LocationController extends Controller
             'destination' => 'required|array',
             'destination.lat' => 'required|numeric',
             'destination.lng' => 'required|numeric',
-            'destination_name' => 'required|array',
+            'destination_name' => 'required|string',
         ]);
 
         // Jika validasi gagal
@@ -436,75 +436,6 @@ class LocationController extends Controller
     //     ], 404);
     // }
 
-    private function calculateHaversineDistance($origin, $tukangLocation)
-    {
-        try {
-            // Log input values
-            \Log::info('Input values:', [
-                'origin' => $origin,
-                'origin_type' => gettype($origin),
-                'tukangLocation' => $tukangLocation,
-                'tukang_type' => gettype($tukangLocation)
-            ]);
-
-            // If origin is a string, try to decode it
-            if (is_string($origin)) {
-                $origin = json_decode($origin, true);
-            } elseif (!is_array($origin)) {
-                throw new \InvalidArgumentException('Invalid origin format. Expected JSON string or array.');
-            }
-
-            // If tukangLocation is a string, try to decode it
-            if (is_string($tukangLocation)) {
-                $tukangLocation = json_decode($tukangLocation, true);
-            } elseif (!is_array($tukangLocation)) {
-                throw new \InvalidArgumentException('Invalid tukangLocation format. Expected JSON string or array.');
-            }
-
-            // Validate coordinates exist
-            if (!isset($origin['lat'], $origin['lng'], $tukangLocation['lat'], $tukangLocation['lng'])) {
-                \Log::error('Invalid coordinates format', [
-                    'origin' => $origin,
-                    'tukangLocation' => $tukangLocation
-                ]);
-                return PHP_FLOAT_MAX;
-            }
-
-            $lat1 = (float)$origin['lat'];
-            $lng1 = (float)$origin['lng'];
-            $lat2 = (float)$tukangLocation['lat'];
-            $lng2 = (float)$tukangLocation['lng'];
-
-            $earthRadius = 6371;
-
-            $latDifferenceRad = deg2rad($lat2 - $lat1);
-            $lngDifferenceRad = deg2rad($lng2 - $lng1);
-
-            $lat1Rad = deg2rad($lat1);
-            $lat2Rad = deg2rad($lat2);
-
-            $a = sin($latDifferenceRad / 2) * sin($latDifferenceRad / 2) +
-                cos($lat1Rad) * cos($lat2Rad) *
-                sin($lngDifferenceRad / 2) * sin($lngDifferenceRad / 2);
-
-            $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-            $distance = $earthRadius * $c;
-
-            \Log::info('Distance calculated:', ['distance' => $distance]);
-
-            return $distance;
-
-        } catch (\Exception $e) {
-            \Log::error('Error in calculateHaversineDistance:', [
-                'error' => $e->getMessage(),
-                'origin' => $origin,
-                'tukangLocation' => $tukangLocation
-            ]);
-            return PHP_FLOAT_MAX;
-        }
-    }
-
-
     public function updateWaktuServis(Request $request)
     {
         $tukang = auth()->user();
@@ -536,13 +467,12 @@ class LocationController extends Controller
         // Mengambil daftar pesanan dengan join tabel tukang dan location
         $pesananList = collect(DB::table('pesanan')
             ->join('location', 'pesanan.id_user', '=', 'location.id_user')
-            ->join('tukang', 'pesanan.id_tukang', '=', 'tukang.id_tukang')  // Menambahkan join untuk tabel tukang
+            ->join('tukang', 'pesanan.id_tukang', '=', 'tukang.id_tukang')
             ->where('pesanan.id_tukang', $tukang->id_tukang)
             ->whereNull('pesanan.waktu_servis')
-            ->select('pesanan.id_pesanan', 'location.destination', 'tukang.tukang_location') // Menambahkan tukang_location
+            ->select('pesanan.*', 'location.destination', 'tukang.tukang_location')
             ->get());
 
-        // Memeriksa apakah koleksi kosong
         if ($pesananList->isEmpty()) {
             return response()->json([
                 'status' => 'error',
@@ -551,71 +481,194 @@ class LocationController extends Controller
         }
 
         $updatedCount = 0;
+        $processedPesanan = [];
 
         foreach ($pesananList as $pesanan) {
+            \Log::info('Processing pesanan:', ['id_pesanan' => $pesanan->id_pesanan]);
+            
             $destinationLocation = $pesanan->destination;
             $tukangLocation = $pesanan->tukang_location;
-        
-            // Langkah 1: Dekode dua kali jika perlu
+
+            // Handle double-escaped destination JSON
             if (is_string($destinationLocation)) {
-                // Dekode pertama untuk menghapus escape karakter
                 $destinationLocation = json_decode($destinationLocation, true);
-                // Cek apakah hasilnya masih berupa string JSON
                 if (is_string($destinationLocation)) {
-                    // Dekode kedua jika masih dalam format string JSON
                     $destinationLocation = json_decode($destinationLocation, true);
                 }
             }
-        
-            // Pastikan destinationLocation adalah array dengan lat dan lng
-            if (!is_array($destinationLocation) || !isset($destinationLocation['lat'], $destinationLocation['lng'])) {
-                \Log::warning('Invalid destination format or missing coordinates for pesanan ID: ' . $pesanan->id_pesanan);
-                continue;
-            }
-        
-            // Dekode tukang_location jika perlu
+
+            // Handle tukang location JSON
             if (is_string($tukangLocation)) {
                 $tukangLocation = json_decode($tukangLocation, true);
             }
-        
-            // Pastikan tukangLocation adalah array dengan lat dan lng
-            if (!is_array($tukangLocation) || !isset($tukangLocation['lat'], $tukangLocation['lng'])) {
-                \Log::warning('Invalid tukang location format for pesanan ID: ' . $pesanan->id_pesanan);
+
+            // Validate both locations
+            if (!is_array($destinationLocation) || !isset($destinationLocation['lat'], $destinationLocation['lng'])) {
+                \Log::warning('Invalid destination format:', [
+                    'id_pesanan' => $pesanan->id_pesanan,
+                    'destination' => $destinationLocation
+                ]);
                 continue;
             }
-        
-            // Hitung jarak
-            $distance = $this->calculateHaversineDistance($destinationLocation, $tukangLocation);
 
-            \Log::info('Jarak antara tukang dan tujuan: ' . $distance . ' km');
-        
-            // Cek apakah jarak dalam radius 100 meter (0.1 km)
+            if (!is_array($tukangLocation) || !isset($tukangLocation['lat'], $tukangLocation['lng'])) {
+                \Log::warning('Invalid tukang location format:', [
+                    'id_pesanan' => $pesanan->id_pesanan,
+                    'tukang_location' => $tukangLocation
+                ]);
+                continue;
+            }
+
+            // Calculate distance and log coordinates
+            $distance = $this->calculateHaversineDistance($destinationLocation, $tukangLocation);
+            
+            \Log::info('Distance calculation:', [
+                'id_pesanan' => $pesanan->id_pesanan,
+                'destination' => $destinationLocation,
+                'tukang_location' => $tukangLocation,
+                'distance' => $distance
+            ]);
+
+            // Check if within 100 meters (0.1 km)
             if ($distance <= 0.1) {
                 try {
-                    DB::table('pesanan')
+                    DB::beginTransaction();
+
+                    $updated = DB::table('pesanan')
                         ->where('id_pesanan', $pesanan->id_pesanan)
+                        ->whereNull('waktu_servis')
                         ->update([
                             'waktu_servis' => now(),
                             'updated_at' => now(),
                         ]);
-        
-                    ChangeTimeService::dispatch($pesanan);
-                    $updatedCount++;
+
+                    if ($updated) {
+                        // Fetch the updated pesanan for the event
+                        $updatedPesanan = DB::table('pesanan')
+                            ->where('id_pesanan', $pesanan->id_pesanan)
+                            ->first();
+
+                        if ($updatedPesanan) {
+                            ChangeTimeService::dispatch($updatedPesanan);
+                            $updatedCount++;
+                            $processedPesanan[] = $updatedPesanan;
+                        }
+                    }
+
+                    DB::commit();
+                    
+                    \Log::info('Successfully updated pesanan:', [
+                        'id_pesanan' => $pesanan->id_pesanan,
+                        'waktu_servis' => now()
+                    ]);
                 } catch (\Exception $e) {
+                    DB::rollBack();
                     \Log::error('Failed to update waktu_servis:', [
                         'error' => $e->getMessage(),
                         'id_pesanan' => $pesanan->id_pesanan,
                     ]);
                 }
+            } else {
+                \Log::info('Pesanan outside service radius:', [
+                    'id_pesanan' => $pesanan->id_pesanan,
+                    'distance' => $distance
+                ]);
             }
-        }           
+        }
 
         return response()->json([
             'status' => 'success',
             'message' => 'Waktu servis diperbarui untuk ' . $updatedCount . ' pesanan dalam radius layanan.',
             'updated_count' => $updatedCount,
-            'pesanan_list' => $pesananList,  // Menampilkan data pesanan beserta lokasi tukang dan tujuan
+            'processed_pesanan' => $processedPesanan,
         ]);
+    }
+
+    private function calculateHaversineDistance($origin, $tukangLocation)
+    {
+        try {
+            \Log::info('Calculating distance between:', [
+                'origin' => $origin,
+                'tukangLocation' => $tukangLocation
+            ]);
+
+            if (!isset($origin['lat'], $origin['lng'], $tukangLocation['lat'], $tukangLocation['lng'])) {
+                throw new \InvalidArgumentException('Missing coordinates in input locations');
+            }
+
+            $lat1 = (float)$origin['lat'];
+            $lng1 = (float)$origin['lng'];
+            $lat2 = (float)$tukangLocation['lat'];
+            $lng2 = (float)$tukangLocation['lng'];
+
+            // Validate coordinates are within reasonable bounds
+            if (abs($lat1) > 90 || abs($lat2) > 90 || abs($lng1) > 180 || abs($lng2) > 180) {
+                throw new \InvalidArgumentException('Coordinates out of valid range');
+            }
+
+            $earthRadius = 6371; // Radius of Earth in kilometers
+
+            $latDifferenceRad = deg2rad($lat2 - $lat1);
+            $lngDifferenceRad = deg2rad($lng2 - $lng1);
+
+            $lat1Rad = deg2rad($lat1);
+            $lat2Rad = deg2rad($lat2);
+
+            $a = sin($latDifferenceRad / 2) * sin($latDifferenceRad / 2) +
+                cos($lat1Rad) * cos($lat2Rad) *
+                sin($lngDifferenceRad / 2) * sin($lngDifferenceRad / 2);
+
+            $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+            $distance = $earthRadius * $c;
+
+            \Log::info('Distance calculated:', ['distance' => $distance]);
+
+            return $distance;
+
+        } catch (\Exception $e) {
+            \Log::error('Error in calculateHaversineDistance:', [
+                'error' => $e->getMessage(),
+                'origin' => $origin,
+                'tukangLocation' => $tukangLocation
+            ]);
+            return PHP_FLOAT_MAX;
+        }
+    }
+
+    public function updateWaktuServispencet(Request $request)
+    {
+        $tukang = auth()->user();
+
+        if (!$tukang || !$tukang->id_tukang) {
+            return response()->json([
+                'status' => 'error',
+                'message' => !$tukang ? 'User tidak terautentikasi.' : 'Hanya tukang yang dapat mengubah waktu servis.',
+            ], !$tukang ? 401 : 403);
+        }
+
+        $idPesanan = $request->input('id_pesanan');
+
+        $Pesanan = DB::table('pesanan')
+            ->where('id_pesanan', $idPesanan)
+            ->first();
+
+        if (!$Pesanan) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Pesanan tidak ditemukan.',
+            ], 404);
+        }
+
+        DB::table('pesanan')
+            ->where('id_pesanan', $idPesanan)
+            ->update([
+                'waktu_servis' => now(),
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Tukang selesai bekerja',
+        ], 200);
     }
 
 
