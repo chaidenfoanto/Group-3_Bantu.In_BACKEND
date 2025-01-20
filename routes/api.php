@@ -19,6 +19,8 @@ Route::post('/login', [RegisController::class, 'loginUser'])->name('login');
 Route::post('/registukangs', [TukangController::class, 'registersTukang']); // bisa
 Route::post('/tukanglogin', [TukangController::class, 'loginTukang']); // bisa
 
+Route::put('/lupapass', [RegisController::class, 'lupaPassword']); // 
+
 // Grup untuk middleware 'auth:sanctum'
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {

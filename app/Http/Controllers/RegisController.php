@@ -59,8 +59,6 @@ class RegisController extends Controller
             'password' => 'required|string|min:8',
             'password_confirmation' => 'required|string|min:8|same:password', // Sesuaikan dengan nama field password
             'no_hp' => 'required|string|min:11',
-            'alamat' => 'required|string',
-            'deskripsi_alamat' => 'required|string', // Inisialisasi deskripsi_alamat sebagai null sebelum diupdate di proses rating
         ]);
 
         // Jika validasi gagal
@@ -80,8 +78,6 @@ class RegisController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password), // Hash password saat penyimpanan
                 'no_hp' => $request->no_hp,
-                'alamat' => $request->alamat,
-                'deskripsi_alamat' => $request->deskripsi_alamat, // Inisialisasi deskripsi_alamat sebagai null sebelum diupdate di proses rating
             ]);
 
             // Kirimkan response tanpa password
@@ -318,6 +314,57 @@ class RegisController extends Controller
         }
     }
 
+    public function lupaPassword(Request $request)
+    {
+        // Validasi input email dan password baru
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email', // Email wajib dan harus terdaftar
+            'password' => 'required|string|min:8', // Password baru wajib diisi
+            'password_confirmation' => 'required|string|same:password', // Konfirmasi password wajib sama
+        ]);
+
+        // Jika validasi gagal
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            // Cari pengguna berdasarkan email
+            $user = \App\Models\User::where('email', $request->email)->first();
+
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Email tidak ditemukan.',
+                ], 404);
+            }
+
+            // Update password pengguna
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            // Kembalikan response sukses
+            return response()->json([
+                'status' => true,
+                'message' => 'Password berhasil direset.',
+                'data' => [
+                    'email' => $user->email,
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            // Tangani kesalahan jika terjadi
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan saat mereset password.',
+                'error' => $e->getMessage(), // Untuk debugging
+            ], 500);
+        }
+    }
 
     public function destroyUser()
     {
