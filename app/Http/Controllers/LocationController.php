@@ -471,7 +471,7 @@ class LocationController extends Controller
             ->where('pesanan.id_tukang', $tukang->id_tukang)
             ->whereNull('pesanan.waktu_servis')
             ->select('pesanan.*', 'location.destination', 'tukang.tukang_location')
-            ->get());
+            ->first());
 
         if ($pesananList->isEmpty()) {
             return response()->json([
@@ -530,7 +530,7 @@ class LocationController extends Controller
             ]);
 
             // Check if within 100 meters (0.1 km)
-            if ($distance <= 0.1) {
+            if ($distance <= 0.5) {
                 try {
                     DB::beginTransaction();
 

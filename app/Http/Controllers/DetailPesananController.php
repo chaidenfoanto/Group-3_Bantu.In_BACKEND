@@ -151,8 +151,40 @@ class DetailPesananController extends Controller
             ], 500);
         }
     }
+
+    /**
+ * @OA\Get(
+ *     path="/api/detailbayar/{id_pesanan}",
+ *     summary="Get detailed payment information for an order",
+ *     tags={"Orders"},
+ *     @OA\Parameter(
+ *         name="id_pesanan",
+ *         in="path",
+ *         required=true,
+ *         description="Order ID",
+ *         @OA\Schema(type="string")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Success",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="string"),
+ *             @OA\Property(property="message", type="string"),
+ *             @OA\Property(property="data", type="object")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=401,
+ *         description="Unauthenticated"
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Order not found"
+ *     )
+ * )
+ */
     
-    public function getDetailAkhir(Request $request, $idPesanan) {
+    public function getDetailAkhir(Request $request, $idPesanan) : JsonResponse {
         // Ambil user yang terautentikasi
         $user = auth()->user();
         

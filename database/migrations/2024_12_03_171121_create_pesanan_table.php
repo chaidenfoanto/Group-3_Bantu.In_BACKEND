@@ -19,7 +19,7 @@ return new class extends Migration
             $table->datetime('waktu_pesan'); 
             $table->datetime('waktu_servis')->nullable();
             $table->text('alamat_servis');
-            $table->enum('metode_pembayaran', ['Cash', 'Non-tunai'])->default('Cash');
+            $table->enum('metode_pembayaran', ['Cash', 'Transfer'])->default('Cash');
             $table->integer('kuantitas')->default(1);
             $table->datetime('waktu_req_by_user')->nullable();
             $table->text('description_problem')->nullable();

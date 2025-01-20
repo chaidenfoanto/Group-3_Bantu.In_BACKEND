@@ -52,7 +52,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/pesanan/detail', [DetailPesananController::class, 'getDetailPesanan']);
     Route::put('/pesanandetail', [DetailPesananController::class, 'putDetailPesanandeskripsiservis']);
-    Route::get('/detailbayar/{id_pesanan}', [DetailPesananController::class, 'getdetailakhir']);
+    Route::get('/detailbayar/{id_pesanan}', [DetailPesananController::class, 'getDetailAkhir']);
 
     Route::put('/ulasan/tukang/{id_tukang}', [CommentsTukangController::class, 'kasihulasanuser']);
     Route::post('/rating/tukang/{id_tukang}', [CommentsTukangController::class, 'kasihratinguser']);
