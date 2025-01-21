@@ -10,6 +10,7 @@ use App\Http\Controllers\CommentsTukangController;
 use App\Http\Controllers\DetailPesananController;
 use App\Http\Controllers\TukangUpdateHistory;
 use App\Http\Controllers\PesananChooseController;
+use App\Http\Controllers\EducationController;
 
 //user
 Route::post('/regists', [RegisController::class, 'registersUser']); // bisa
@@ -19,7 +20,7 @@ Route::post('/login', [RegisController::class, 'loginUser'])->name('login');
 Route::post('/registukangs', [TukangController::class, 'registersTukang']); // bisa
 Route::post('/tukanglogin', [TukangController::class, 'loginTukang']); // bisa
 
-Route::put('/lupapass', [RegisController::class, 'lupaPassword']); // 
+Route::put('/lupapass', [RegisController::class, 'lupaPassword']); //
 
 // Grup untuk middleware 'auth:sanctum'
 Route::middleware('auth:sanctum')->group(function () {
@@ -27,11 +28,11 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
-    Route::get('/customers', [RegisController::class, 'showUser']); // bisa 
-    Route::put('/customers', [RegisController::class, 'updateUser']); // 
-    Route::put('/resetpass', [RegisController::class, 'resetPassword']); // 
+    Route::get('/customers', [RegisController::class, 'showUser']); // bisa
+    Route::put('/customers', [RegisController::class, 'updateUser']); //
+    Route::put('/resetpass', [RegisController::class, 'resetPassword']); //
     Route::delete('/customers', [RegisController::class, 'destroyUser']); // bisa
-    Route::patch('/updatefotouser', [RegisController::class, 'updateFotoDiri']); // 
+    Route::patch('/updatefotouser', [RegisController::class, 'updateFotoDiri']); //
 
     Route::post('/logoutuser', [\App\Http\Controllers\RegisController::class, 'logout']);
 
@@ -41,7 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Route untuk mengakhiri perjalanan
     Route::patch('/location/end', [LocationController::class, 'end']);
-    
+
     // buat get untuk user dapat tukangnya
     Route::get('/lokasitukangterdekat', [LocationController::class, 'getNearestTukang']);
     Route::get('/lokasitukangterdekattarik', [LocationController::class, 'getNearestTukangTarik']);
@@ -59,6 +60,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/ulasan/tukang/{id_tukang}', [CommentsTukangController::class, 'kasihulasanuser']);
     Route::post('/rating/tukang/{id_tukang}', [CommentsTukangController::class, 'kasihratinguser']);
     Route::get('/lihatratingxulasan/{id_tukang}', [CommentsController::class, 'getKomentarTukang']);
+
+    //edukasi
+    Route::get('/education/videos', [EducationController::class, 'getVideos']);
+    Route::get('/education/facts', [EducationController::class, 'getFacts']);
+    Route::get('/education/facts/{id}', [EducationController::class, 'getFactDetail']);
 });
 
 // Grup untuk middleware 'auth:tukang'
