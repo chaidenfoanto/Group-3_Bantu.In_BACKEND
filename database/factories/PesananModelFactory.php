@@ -27,9 +27,10 @@ class PesananModelFactory extends Factory
             'id_tukang' => $this->faker->randomElement(\App\Models\TukangModel::pluck('id_tukang')->toArray()), // Ambil ID tukang dari tabel tukang
             'id_biaya' => $this->faker->randomElement(\App\Models\BiayaModel::pluck('id_biaya')->toArray()), // Ambil ID biaya dari tabel biaya
             'waktu_pesan' => now(), // Waktu pesan adalah sekarang
+            'kuantitas' => $this->faker->numberBetween(0, 10),
             'waktu_servis' => $this->faker->dateTimeBetween('+1 day', '+7 days'), // Waktu servis dalam rentang 1-7 hari ke depan
             'alamat_servis' => $this->faker->address, // Alamat servis acak
-            'metode_pembayaran' => $this->faker->randomElement(['Cash', 'Non-cash']), // Pilih metode pembayaran acak
+            'metode_pembayaran' => $this->faker->randomElement(['Cash', 'Transfer']), // Pilih metode pembayaran acak
         ];
     }
 }

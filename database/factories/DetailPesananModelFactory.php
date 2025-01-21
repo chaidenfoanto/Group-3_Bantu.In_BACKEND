@@ -35,7 +35,6 @@ class DetailPesananModelFactory extends Factory
             'id_pesanan' => $pesanan->id_pesanan,
             'nama_layanan' => $biaya->jenis_servis,
             'harga_layanan' => $biaya->biaya_servis,
-            'kuantitas' => $kuantitas,
             'subtotal' => $subtotal,
             'deskripsi_servis' => $this->faker->sentence(),
         ];
