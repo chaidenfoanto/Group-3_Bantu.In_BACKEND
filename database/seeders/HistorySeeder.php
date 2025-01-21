@@ -22,7 +22,7 @@ class HistorySeeder extends Seeder
         foreach ($pesanans as $pesanan) {
             HistoryModel::create([
                 'id_pesanan' => $pesanan->id_pesanan, // Mengaitkan history dengan id_pesanan yang ada
-                'status' => 'not done', // Status awal 'not done'
+                'status' => 'On_Progress', // Status awal 'not done'
             ]);
         }
     }
