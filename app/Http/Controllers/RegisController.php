@@ -52,42 +52,32 @@ class RegisController extends Controller
 
     public function registersUser(Request $request)
     {
-        // Validasi input request
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|unique:users|max:255', // Sesuaikan dengan nama tabel
-            'password' => 'required|string|min:8',
-            'password_confirmation' => 'required|string|min:8|same:password', // Sesuaikan dengan nama field password
-            'no_hp' => 'required|string|min:11',
-        ]);
-
-        // Jika validasi gagal
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         try {
-            // Membuat user dan meng-hash password sebelum menyimpannya
+            // Membuat user dengan hash password
             $user = User::create([
-                'id_user' => $request->id_user,
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => Hash::make($request->password), // Hash password saat penyimpanan
+                'password' => Hash::make($request->password),
                 'no_hp' => $request->no_hp,
             ]);
 
-            // Kirimkan response tanpa password
+            // Response sukses
             return response()->json([
                 'status' => true,
-                'message' => 'user created successfully',
-                'data' => $user
+                'message' => 'User created successfully',
+                'data' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'no_hp' => $user->no_hp,
+                ]
             ], 201);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Server error',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -109,10 +99,10 @@ class RegisController extends Controller
 
         // Ambil kredensial
         $credentials = $request->only('email', 'password');
-        
+
         // Cek apakah email ada di database
         $user = User::where('email', $request->email)->first();
-        
+
         // Jika user tidak ditemukan
         if (!$user) {
             return response()->json([
@@ -404,5 +394,5 @@ class RegisController extends Controller
             'message' => 'logout success'
         ]);
     }
-    
+
 }
