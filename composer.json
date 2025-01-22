@@ -12,7 +12,8 @@
         "laravel/reverb": "^1.4",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
-        "pusher/pusher-php-server": "^7.2"
+        "pusher/pusher-php-server": "^7.2",
+        "symfony/polyfill-intl-idn": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
