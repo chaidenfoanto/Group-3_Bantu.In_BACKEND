@@ -751,7 +751,7 @@ class LocationController extends Controller
             'jenis_servis.*.jenis' => 'required|string|exists:biaya,jenis_servis',
             'jenis_servis.*.kuantitas' => 'required|integer|min:1',
             'alamat_servis' => 'required|string',
-            'metode_pembayaran' => 'required|in:Cash,Non-tunai'
+            'metode_pembayaran' => 'nullable|in:Cash,Transfer'
         ];
 
         // Tambahkan validasi id_tukang jika ada
@@ -873,6 +873,8 @@ class LocationController extends Controller
 
         $totalBiaya += $biayaAdmin;
 
+        $metodePembayaran = $request->metode_pembayaran ?? 'Cash';
+
         // Buat data pesanan utama
         $idPesanan = Str::uuid()->toString();
         $pesananData = [
@@ -882,7 +884,7 @@ class LocationController extends Controller
             'id_biaya' => $latestBiaya->id_biaya,
             'waktu_pesan' => now(),
             'alamat_servis' => $request->alamat_servis,
-            'metode_pembayaran' => $request->metode_pembayaran,
+            'metode_pembayaran' => $metodePembayaran,
             'kuantitas' => collect($request->jenis_servis)->sum('kuantitas'),
             'created_at' => now(),
             'updated_at' => now(),

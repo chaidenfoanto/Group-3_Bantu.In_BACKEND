@@ -78,6 +78,7 @@ class RegisController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password), // Hash password saat penyimpanan
                 'no_hp' => $request->no_hp,
+                'password_confirmation' => $request->password_confirmation,
             ]);
 
             // Kirimkan response tanpa password

@@ -38,7 +38,7 @@ class PesananChooseController extends Controller
             'jenis_servis.*.jenis' => 'required|string|exists:biaya,jenis_servis',
             'jenis_servis.*.kuantitas' => 'required|integer|min:1',
             'alamat_servis' => 'required|string',
-            'metode_pembayaran' => 'required|in:Cash,Non-tunai',
+            'metode_pembayaran' => 'nullable|in:Cash,Transfer',
             'waktu_req_by_user' => 'required|date|after:now',
             'description_problem' => 'nullable|string',
             'photo_problem_issue' => 'nullable|image|max:2048'
@@ -150,6 +150,8 @@ class PesananChooseController extends Controller
 
         $totalBiaya += $biayaAdmin;
 
+        $metodePembayaran = $request->metode_pembayaran ?? 'Cash';
+
         // Buat data pesanan utama
         $idPesanan = Str::uuid()->toString();
         $pesananData = [
@@ -159,7 +161,7 @@ class PesananChooseController extends Controller
             'id_biaya' => $latestBiaya->id_biaya,
             'waktu_pesan' => now(),
             'alamat_servis' => $request->alamat_servis,
-            'metode_pembayaran' => $request->metode_pembayaran,
+            'metode_pembayaran' => $metodePembayaran,
             'kuantitas' => collect($request->jenis_servis)->sum('kuantitas'),
             'waktu_req_by_user' => Carbon::parse($request->waktu_req_by_user)->format('Y-m-d H:i:s'),
             'description_problem' => $request->description_problem,

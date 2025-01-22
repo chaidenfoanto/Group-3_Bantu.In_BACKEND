@@ -28,6 +28,22 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
+    Route::get('/user-dashboard', function (Request $request) {
+        return response()->json([
+            'name' => $request->user()->name,
+        ]);
+    });
+
+    Route::get('/user-profile', function (Request $request) {
+        return response()->json([
+            'name' => $request->user()->name,
+            'email' => $request->user()->email,
+            'no_hp' => $request->user()->no_hp,
+            'foto_diri' => $request->user()->foto_diri,
+            'password_confirmation' => $request->user()->password_confirmation
+        ]);
+    });
+
     Route::get('/customers', [RegisController::class, 'showUser']); // bisa
     Route::put('/customers', [RegisController::class, 'updateUser']); //
     Route::put('/resetpass', [RegisController::class, 'resetPassword']); //

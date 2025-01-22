@@ -23,6 +23,8 @@ class DatabaseSeeder extends Seeder
             DetailPesananSeeder::class,
             HistorySeeder::class,
             LocationSeeder::class,
+            VideoSeeder::class,
+            Factseeder::class,
             // PesananTukangSeeder::class,
             // PesananUserSeeder::class,
             // PembayaranSeeder::class,
