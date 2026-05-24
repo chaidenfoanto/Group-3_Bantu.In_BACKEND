@@ -1,4 +1,4 @@
-# Jobaile_BACKEND
+# BantuIn_BACKEND
 
 [![Contributors](https://img.shields.io/github/contributors/chaidenfoanto/Jobaile_BACKEND?style=for-the-badge)](https://github.com/chaidenfoanto/Jobaile_BACKEND/graphs/contributors)
 
