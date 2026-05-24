@@ -1,66 +1,260 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Jobaile_BACKEND
+
+[![Contributors](https://img.shields.io/github/contributors/chaidenfoanto/Jobaile_BACKEND?style=for-the-badge)](https://github.com/chaidenfoanto/Jobaile_BACKEND/graphs/contributors)
+
+[contributors-shield]: https://img.shields.io/github/contributors/chaidenfoanto/Jobaile_BACKEND.svg?style=for-the-badge]
+
+[![LinkedIn Franklin Jaya](https://img.shields.io/badge/LinkedIn-Franklin%20Jaya-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/franklin-jaya-6a3697364/) [![LinkedIn Chaiden](https://img.shields.io/badge/LinkedIn-Chaiden-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/chaidenfoanto/?locale=en) [![LinkedIn Felicia Wijaya](https://img.shields.io/badge/LinkedIn-Felicia%20Wijaya-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/felicia-wijaya-a9a795288/)
+
+[linkedin-shield]: https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white
+
+
+
+<!-- PROJECT LOGO -->
+<p align="center">
+  <img src="jobailelogo.png" width="250">
+</p>
+<br />
+
+
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#built-with">Built With</a></li>
+        <li><a href="#project-dependencies">Project Dependencies</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#usage">Usage</a>
+    </li>
+    <li>
+      <a href="#development-team">Development Team</a>
+    </li>
+    <li>
+      <a href="#contact">Contact</a>
+    </li>
+  </ol>
+</details>
+
+
+
+<!-- ABOUT THE PROJECT -->
+## About The Project
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="mokupjobaile.png" width="250">
 </p>
 
-## About Laravel
+Jobaile is a mobile and web-based recruitment platform designed to connect recruiters with domestic workers such as housemaids (ART), caregivers, cleaners, and other household service providers.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+The application was developed to help address trust issues that are still common in domestic worker recruitment processes. Many employers experience difficulties in finding reliable workers, while workers also struggle to access secure and trustworthy job opportunities.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Jobaile provides a digital platform that simplifies the recruitment process through user verification, worker profiles, communication features, and job matching systems.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+The system consists of two main roles:
 
-## Learning Laravel
+### Recruiter
+Recruiters or employers can:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- Search for domestic workers
+- View worker profiles and information
+- Monitor application status
+- Communicate with workers
+- Find workers that match their requirements
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Worker
+Workers can:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- Create professional profiles
+- Apply for available jobs
+- Showcase skills and experiences
+- Receive job opportunities from recruiters
+- Build credibility through profile information
 
-## Laravel Sponsors
+Main features include:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- Domestic worker recruitment platform
+- Recruiter and worker role management
+- Real-time communication features
+- Profile and identity management
+- Job searching and matching system
+- Mobile-friendly user experience
+- Secure authentication system
 
-### Premium Partners
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
 
-## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Built With
 
-## Code of Conduct
+This backend project was built with php followingg technologies:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+<a href="https://laravel.com">
+  <img src="https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" height="35">
+</a>
 
-## Security Vulnerabilities
+### Project Dependencies
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+This project uses:
 
-## License
+- Laravel Composer
+- Laravel Sanctum
+- Swagger
+- Laraavel Reverb
+- Laravel Tinker
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Example imports used in the project:
+
+```laravel
+"require": {
+        "php": "^8.2",
+        "darkaonline/l5-swagger": "^9.0",
+        "laravel/framework": "^11.31",
+        "laravel/reverb": "^1.0",
+        "laravel/sanctum": "^4.0",
+        "laravel/tinker": "^2.9",
+        "otnansirk/laravel-dana": "^2.3",
+        "thiagoprz/eloquent-composite-key": "^1.0",
+        "zircote/swagger-php": "^5.1"
+    },
+```
+
+## Getting Started
+
+Follow these steps to set up the laravel project locally
+
+### Prerequisites
+
+Make sure you have installed the following software:
+
+- PHP 8.2+
+- Composer
+- Git
+- MySQL 
+
+Check your installation:
+
+```sh
+php --version
+composer --version
+git --version
+```
+
+---
+
+### Installation
+
+1. Clone the repository
+
+```sh
+git clone https://github.com/your_username/your_repository.git
+```
+
+2. Navigate to the project folder
+
+```sh
+cd your_repository
+```
+
+3. Install project dependencies
+
+```sh
+composer install
+```
+
+4. Copy the environment configuration file
+
+```sh
+cp .env.example .env
+```
+
+**Windows (PowerShell)**
+
+```powershell
+copy .env.example .env
+```
+
+5. Generate the Laravel application key
+
+```sh
+php artisan key:generate
+```
+
+6. Configure your database in the `.env` file
+
+Example:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=your_database
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+7. Run database migrations
+
+```sh
+php artisan migrate
+```
+
+8. Start the Laravel development server
+
+```sh
+php artisan serve
+```
+
+The backend server will run at:
+
+```txt
+http://127.0.0.1:8000
+```
+
+---
+
+<!-- USAGE EXAMPLES -->
+## Usage
+
+This project consists of two separate repositories:
+
+- Frontend (Flutter)
+- Backend (Laravel API)
+
+Repository Links:
+- Frontend Recruiter: https://github.com/chaidenfoanto/Jobaile_FRONTEND_Recruiter
+- Backend: https://github.com/chaidenfoanto/Jobaile_BACKEND
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- CONTACT -->
+## Contact
+
+Franklin Jaya - [@franklinjaya_](https://www.instagram.com/franklinjaya_/) - franklinjaya827@gmail.com - [Franklin_Github](https://github.com/FranklinJaya2006)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Development Team
+
+This Project are developed by **Jobaile Development Team**, which consist of three people:
+
+1. **Chaiden Richardo Foanto**  
+2. **Franklin Jaya** 
+3. **Felicia Wijaya** 
+
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[Laravel.com]: https://img.shields.io/badge/Laravel-%23FF2D20.svg?logo=laravel&logoColor=white
+[Laravel-url]: https://laravel.com
