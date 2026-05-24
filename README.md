@@ -10,7 +10,7 @@
 
 <!-- PROJECT LOGO -->
 <p align="center">
-  <img src="BantuInlogo.png" width="250">
+  <img src="BantuInlogo.png" width="350">
 </p>
 <br />
 
@@ -51,7 +51,7 @@
 ## About The Project
 
 <p align="center">
-  <img src="Mockup-BantuIn.png" width="250">
+  <img src="Mockup-BantuIn.png" width="450">
 </p>
 
 This backend system is designed to support two main user roles:
