@@ -51,7 +51,7 @@
 ## About The Project
 
 <p align="center">
-  <img src="mokupbantuin.png" width="250">
+  <img src="Mockup-Bantuin.png" width="250">
 </p>
 
 This backend system is designed to support two main user roles:
