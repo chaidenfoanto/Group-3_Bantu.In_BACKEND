@@ -10,7 +10,7 @@
 
 <!-- PROJECT LOGO -->
 <p align="center">
-  <img src="bantuinlogo.png" width="250">
+  <img src="BantuInlogo.png" width="250">
 </p>
 <br />
 
@@ -51,48 +51,19 @@
 ## About The Project
 
 <p align="center">
-  <img src="mokupjobaile.png" width="250">
+  <img src="mokupbantuin.png" width="250">
 </p>
 
-Jobaile is a mobile and web-based recruitment platform designed to connect recruiters with domestic workers such as housemaids (ART), caregivers, cleaners, and other household service providers.
+This backend system is designed to support two main user roles:
 
-The application was developed to help address trust issues that are still common in domestic worker recruitment processes. Many employers experience difficulties in finding reliable workers, while workers also struggle to access secure and trustworthy job opportunities.
+1. **Customers**: Individuals or families who need reliable and high-quality household or service assistance, including migrants, students, and office workers.  
+2. **Service Providers**: Skilled workers or technicians who want to reach more customers easily and improve their professionalism through a digital platform.  
 
-Jobaile provides a digital platform that simplifies the recruitment process through user verification, worker profiles, communication features, and job matching systems.
+The backend is developed using **Laravel** to provide a secure, scalable, and maintainable RESTful API system. It handles authentication, user management, service transactions, real-time communication, and data processing to ensure seamless integration between the frontend application and database system.
 
-The system consists of two main roles:
-
-### Recruiter
-Recruiters or employers can:
-
-- Search for domestic workers
-- View worker profiles and information
-- Monitor application status
-- Communicate with workers
-- Find workers that match their requirements
-
-### Worker
-Workers can:
-
-- Create professional profiles
-- Apply for available jobs
-- Showcase skills and experiences
-- Receive job opportunities from recruiters
-- Build credibility through profile information
-
-Main features include:
-
-- Domestic worker recruitment platform
-- Recruiter and worker role management
-- Real-time communication features
-- Profile and identity management
-- Job searching and matching system
-- Mobile-friendly user experience
-- Secure authentication system
+This project emphasizes system reliability, efficient data management, and secure communication to deliver a stable and user-friendly service platform.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 ### Built With
 
