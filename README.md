@@ -80,7 +80,6 @@ This project uses:
 - Laravel Composer
 - Laravel Sanctum
 - Swagger
-- Laraavel Reverb
 - Laravel Tinker
 
 Example imports used in the project:
@@ -88,14 +87,9 @@ Example imports used in the project:
 ```laravel
 "require": {
         "php": "^8.2",
-        "darkaonline/l5-swagger": "^9.0",
-        "laravel/framework": "^11.31",
-        "laravel/reverb": "^1.0",
+        "laravel/framework": "^11.9",
         "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^2.9",
-        "otnansirk/laravel-dana": "^2.3",
-        "thiagoprz/eloquent-composite-key": "^1.0",
-        "zircote/swagger-php": "^5.1"
+        "laravel/tinker": "^2.9"
     },
 ```
 
@@ -202,7 +196,7 @@ This project consists of two separate repositories:
 - Backend (Laravel API)
 
 Repository Links:
-- Frontend : https://github.com/chaidenfoanto/Jobaile_FRONTEND_Recruiter
+- Frontend : [https://github.com/chaidenfoanto/Jobaile_FRONTEND_Recruiter](https://github.com/chaidenfoanto/Group-3_Bantu.In_FRONTEND)
 - Backend: [https://github.com/chaidenfoanto/Jobaile_BACKEND](https://github.com/chaidenfoanto/Group-3_Bantu.In_BACKEND)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
