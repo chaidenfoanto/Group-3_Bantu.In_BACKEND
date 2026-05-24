@@ -214,7 +214,7 @@ This Project are developed by **Jobaile Development Team**, which consist of thr
 
 1. **Chaiden Richardo Foanto**  
 2. **Franklin Jaya** 
-3. **Felicia Wijaya** 
+3. **Edrick Lionard** 
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
