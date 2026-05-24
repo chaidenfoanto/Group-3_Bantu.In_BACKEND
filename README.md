@@ -196,8 +196,8 @@ This project consists of two separate repositories:
 - Backend (Laravel API)
 
 Repository Links:
-- Frontend : [https://github.com/chaidenfoanto/Jobaile_FRONTEND_Recruiter](https://github.com/chaidenfoanto/Group-3_Bantu.In_FRONTEND)
-- Backend: [https://github.com/chaidenfoanto/Jobaile_BACKEND](https://github.com/chaidenfoanto/Group-3_Bantu.In_BACKEND)
+- Frontend : [https://github.com/chaidenfoanto/Bantu.In Frontend](https://github.com/chaidenfoanto/Group-3_Bantu.In_FRONTEND)
+- Backend: [https://github.com/chaidenfoanto/BantuIn backend](https://github.com/chaidenfoanto/Group-3_Bantu.In_BACKEND)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
