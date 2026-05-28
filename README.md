@@ -20,6 +20,7 @@
   <summary>Table of Contents</summary>
   <ol>
     <li>
+        <a href="#project-links">Project Links</a>
       <a href="#about-the-project">About The Project</a>
       <ul>
         <li><a href="#built-with">Built With</a></li>
@@ -45,7 +46,10 @@
   </ol>
 </details>
 
+## Project Links
 
+- Frontend : [https://github.com/chaidenfoanto/Bantu.In Frontend](https://github.com/chaidenfoanto/Group-3_Bantu.In_FRONTEND)
+- Backend: [https://github.com/chaidenfoanto/BantuIn backend](https://github.com/chaidenfoanto/Group-3_Bantu.In_BACKEND)
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
@@ -194,10 +198,6 @@ This project consists of two separate repositories:
 
 - Frontend (Flutter)
 - Backend (Laravel API)
-
-Repository Links:
-- Frontend : [https://github.com/chaidenfoanto/Bantu.In Frontend](https://github.com/chaidenfoanto/Group-3_Bantu.In_FRONTEND)
-- Backend: [https://github.com/chaidenfoanto/BantuIn backend](https://github.com/chaidenfoanto/Group-3_Bantu.In_BACKEND)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
